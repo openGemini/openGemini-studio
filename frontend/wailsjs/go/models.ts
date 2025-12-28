@@ -27,7 +27,9 @@ export namespace main {
 	    ca_certificate: string;
 	    client_certificate: string;
 	    client_key: string;
-	    ignore_certificate_verification: boolean;
+	    insecure_tls: boolean;
+	    insecure_hostname: boolean;
+	    enable_auth: boolean;
 	    username: string;
 	    password: string;
 	
@@ -43,7 +45,9 @@ export namespace main {
 	        this.ca_certificate = source["ca_certificate"];
 	        this.client_certificate = source["client_certificate"];
 	        this.client_key = source["client_key"];
-	        this.ignore_certificate_verification = source["ignore_certificate_verification"];
+	        this.insecure_tls = source["insecure_tls"];
+	        this.insecure_hostname = source["insecure_hostname"];
+	        this.enable_auth = source["enable_auth"];
 	        this.username = source["username"];
 	        this.password = source["password"];
 	    }

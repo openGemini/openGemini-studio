@@ -40,7 +40,8 @@ export default {
     caCertificate: 'CA 证书路径（可选）',
     clientCertificate: '客户端证书路径（可选）',
     clientKey: '客户端密钥路径（可选）',
-    ignoreCertVerification: '忽略证书验证',
+    insecureTls: '跳过 TLS 证书验证',
+    insecureHostname: '跳过主机名验证',
     testConnection: '测试连接',
     saveConnection: '保存连接',
     deleteConfirm: '确定要删除此连接吗？',
@@ -54,6 +55,7 @@ export default {
     authentication: '认证',
     enable: '启用',
     disable: '禁用',
+    browse: '浏览',
   },
   query: {
     editor: '查询编辑器',

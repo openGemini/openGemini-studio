@@ -1,17 +1,21 @@
 package main
 
-import "encoding/json"
+import (
+	"encoding/json"
+)
 
 type ConnectConfig struct {
-	Name                          string `json:"name"`
-	Address                       string `json:"address"`
-	HTTPSchema                    string `json:"http_schema"`
-	CACertificate                 string `json:"ca_certificate"`
-	ClientCertificate             string `json:"client_certificate"`
-	ClientKey                     string `json:"client_key"`
-	IgnoreCertificateVerification bool   `json:"ignore_certificate_verification"`
-	Username                      string `json:"username"`
-	Password                      string `json:"password"`
+	Name              string `json:"name"`
+	Address           string `json:"address"`
+	HTTPSchema        string `json:"http_schema"`
+	CACertificate     string `json:"ca_certificate"`
+	ClientCertificate string `json:"client_certificate"`
+	ClientKey         string `json:"client_key"`
+	InsecureTls       bool   `json:"insecure_tls"`
+	InsecureHostname  bool   `json:"insecure_hostname"`
+	EnableAuth        bool   `json:"enable_auth"`
+	Username          string `json:"username"`
+	Password          string `json:"password"`
 }
 
 var defaultAppSetting = &AppSetting{

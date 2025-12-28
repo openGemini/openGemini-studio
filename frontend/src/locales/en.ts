@@ -40,7 +40,8 @@ export default {
     caCertificate: 'CA Certificate Path (optional)',
     clientCertificate: 'Client Certificate Path (optional)',
     clientKey: 'Client Key Path (optional)',
-    ignoreCertVerification: 'Ignore Certificate Verification',
+    insecureTls: 'Skip TLS Certificate Verification',
+    insecureHostname: 'Skip Hostname Verification',
     testConnection: 'Test Connection',
     saveConnection: 'Save Connection',
     deleteConfirm: 'Are you sure you want to delete this connection?',
@@ -54,6 +55,7 @@ export default {
     authentication: 'Authentication',
     enable: 'Enable',
     disable: 'Disable',
+    browse: 'Browse',
   },
   query: {
     editor: 'Query Editor',

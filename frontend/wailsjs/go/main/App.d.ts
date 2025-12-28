@@ -12,6 +12,8 @@ export function GetSetting():Promise<main.AppSetting>;
 
 export function ListConnects():Promise<Array<main.ConnectConfig>>;
 
+export function OpenFileDialog():Promise<string>;
+
 export function UpdateConnect(arg1:string,arg2:main.ConnectConfig):Promise<void>;
 
 export function UpdateSetting(arg1:main.AppSetting):Promise<void>;

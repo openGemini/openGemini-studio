@@ -22,6 +22,10 @@ export function ListConnects() {
   return window['go']['main']['App']['ListConnects']();
 }
 
+export function OpenFileDialog() {
+  return window['go']['main']['App']['OpenFileDialog']();
+}
+
 export function UpdateConnect(arg1, arg2) {
   return window['go']['main']['App']['UpdateConnect'](arg1, arg2);
 }

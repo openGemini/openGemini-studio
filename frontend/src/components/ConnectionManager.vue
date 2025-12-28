@@ -159,68 +159,93 @@
     <!-- Add Connection Modal -->
     <div v-if="showAddConnection" class="modal-overlay" @click="showAddConnection = false">
       <div class="modal-content" @click.stop>
-        <h3>{{ $t('connection.newConnection') }}</h3>
-        <div class="form-group">
-          <label>{{ $t('connection.connectionName') }}</label>
-          <input v-model="newConnection.name" type="text" placeholder="My Database" />
+        <div class="modal-header">
+          <h3>{{ $t('connection.newConnection') }}</h3>
         </div>
-        <div class="form-group">
-          <label>
-            {{ $t('connection.address') }}
-            <span class="help-icon" :title="$t('connection.addressHelp')">
-              <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" width="14" height="14">
-                <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2"/>
-                <path d="M12 16v-4M12 8h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-              </svg>
-            </span>
-          </label>
-          <div class="address-input-group">
-            <select v-model="newConnection.protocol" class="protocol-select">
-              <option value="http">HTTP</option>
-              <option value="https">HTTPS</option>
-            </select>
-            <input v-model="newConnection.address" type="text" placeholder="localhost:8086" class="address-input" />
-          </div>
-        </div>
-        <div v-if="newConnection.protocol === 'https'" class="https-options">
+        <div class="modal-body">
           <div class="form-group">
-            <label>{{ $t('connection.caCertificate') }}</label>
-            <input v-model="newConnection.caCert" type="text" placeholder="/path/to/ca.crt" />
+            <label>{{ $t('connection.connectionName') }}</label>
+            <input v-model="newConnection.name" type="text" placeholder="My Database" />
           </div>
           <div class="form-group">
-            <label>{{ $t('connection.clientCertificate') }}</label>
-            <input v-model="newConnection.clientCert" type="text" placeholder="/path/to/client.crt" />
-          </div>
-          <div class="form-group">
-            <label>{{ $t('connection.clientKey') }}</label>
-            <input v-model="newConnection.clientKey" type="text" placeholder="/path/to/client.key" />
-          </div>
-          <div class="form-group checkbox-group">
             <label>
-              <input v-model="newConnection.ignoreCert" type="checkbox" />
-              {{ $t('connection.ignoreCertVerification') }}
+              {{ $t('connection.address') }}
+              <span class="help-icon" :title="$t('connection.addressHelp')">
+                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" width="14" height="14">
+                  <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2"/>
+                  <path d="M12 16v-4M12 8h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+              </span>
             </label>
-          </div>
-        </div>
-        <div class="form-group">
-          <label>
-            {{ $t('connection.authentication') }}
-            <button type="button" class="auth-toggle" @click="newConnection.useAuth = !newConnection.useAuth">
-              {{ newConnection.useAuth ? $t('connection.disable') : $t('connection.enable') }}
-            </button>
-          </label>
-          <div v-if="newConnection.useAuth" class="auth-fields">
-            <div class="form-group">
-              <label>{{ $t('connection.username') }}</label>
-              <input v-model="newConnection.username" type="text" placeholder="admin" />
-            </div>
-            <div class="form-group">
-              <label>{{ $t('connection.password') }}</label>
-              <input v-model="newConnection.password" type="password" placeholder="••••••••" />
+            <div class="address-input-group">
+              <select v-model="newConnection.protocol" class="protocol-select">
+                <option value="http">HTTP</option>
+                <option value="https">HTTPS</option>
+              </select>
+              <input v-model="newConnection.address" type="text" placeholder="localhost:8086" class="address-input" />
             </div>
           </div>
+          <div v-if="newConnection.protocol === 'https'" class="https-options">
+            <div class="form-group">
+              <label>{{ $t('connection.caCertificate') }}</label>
+              <div class="file-input-group">
+                <input v-model="newConnection.caCert" type="text" placeholder="/path/to/ca.crt" />
+                <button type="button" class="btn-browse" @click="selectCaCertFile('new')">
+                  {{ $t('connection.browse') }}
+                </button>
+              </div>
+            </div>
+            <div class="form-group">
+              <label>{{ $t('connection.clientCertificate') }}</label>
+              <div class="file-input-group">
+                <input v-model="newConnection.clientCert" type="text" placeholder="/path/to/client.crt" />
+                <button type="button" class="btn-browse" @click="selectClientCertFile('new')">
+                  {{ $t('connection.browse') }}
+                </button>
+              </div>
+            </div>
+            <div class="form-group">
+              <label>{{ $t('connection.clientKey') }}</label>
+              <div class="file-input-group">
+                <input v-model="newConnection.clientKey" type="text" placeholder="/path/to/client.key" />
+                <button type="button" class="btn-browse" @click="selectClientKeyFile('new')">
+                  {{ $t('connection.browse') }}
+                </button>
+              </div>
+            </div>
+            <div class="form-group checkbox-group">
+              <label>
+                <input v-model="newConnection.insecureTls" type="checkbox" />
+                {{ $t('connection.insecureTls') }}
+              </label>
+            </div>
+            <div class="form-group checkbox-group">
+              <label>
+                <input v-model="newConnection.insecureHostname" type="checkbox" />
+                {{ $t('connection.insecureHostname') }}
+              </label>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>
+              {{ $t('connection.authentication') }}
+              <button type="button" class="auth-toggle" @click="newConnection.enableAuth = !newConnection.enableAuth">
+                {{ newConnection.enableAuth ? $t('connection.disable') : $t('connection.enable') }}
+              </button>
+            </label>
+            <div v-if="newConnection.enableAuth" class="auth-fields">
+              <div class="form-group">
+                <label>{{ $t('connection.username') }}</label>
+                <input v-model="newConnection.username" type="text" placeholder="admin" />
+              </div>
+              <div class="form-group">
+                <label>{{ $t('connection.password') }}</label>
+                <input v-model="newConnection.password" type="password" placeholder="••••••••" />
+              </div>
+            </div>
+          </div>
         </div>
-        <div class="modal-actions">
+        <div class="modal-footer">
           <button @click="showAddConnection = false" class="btn-cancel">{{ $t('common.cancel') }}</button>
           <button @click="addConnection" class="btn-save">{{ $t('common.save') }}</button>
         </div>
@@ -230,68 +255,93 @@
     <!-- Edit Connection Modal -->
     <div v-if="showEditConnection" class="modal-overlay" @click="showEditConnection = false">
       <div class="modal-content" @click.stop>
-        <h3>{{ $t('connection.editConnection') }}</h3>
-        <div class="form-group">
-          <label>{{ $t('connection.connectionName') }}</label>
-          <input v-model="editingConnection.name" type="text" placeholder="My Database" />
+        <div class="modal-header">
+          <h3>{{ $t('connection.editConnection') }}</h3>
         </div>
-        <div class="form-group">
-          <label>
-            {{ $t('connection.address') }}
-            <span class="help-icon" :title="$t('connection.addressHelp')">
-              <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" width="14" height="14">
-                <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2"/>
-                <path d="M12 16v-4M12 8h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-              </svg>
-            </span>
-          </label>
-          <div class="address-input-group">
-            <select v-model="editingConnection.protocol" class="protocol-select">
-              <option value="http">HTTP</option>
-              <option value="https">HTTPS</option>
-            </select>
-            <input v-model="editingConnection.address" type="text" placeholder="localhost:8086" class="address-input" />
-          </div>
-        </div>
-        <div v-if="editingConnection.protocol === 'https'" class="https-options">
+        <div class="modal-body">
           <div class="form-group">
-            <label>{{ $t('connection.caCertificate') }}</label>
-            <input v-model="editingConnection.caCert" type="text" placeholder="/path/to/ca.crt" />
+            <label>{{ $t('connection.connectionName') }}</label>
+            <input v-model="editingConnection.name" type="text" placeholder="My Database" />
           </div>
           <div class="form-group">
-            <label>{{ $t('connection.clientCertificate') }}</label>
-            <input v-model="editingConnection.clientCert" type="text" placeholder="/path/to/client.crt" />
-          </div>
-          <div class="form-group">
-            <label>{{ $t('connection.clientKey') }}</label>
-            <input v-model="editingConnection.clientKey" type="text" placeholder="/path/to/client.key" />
-          </div>
-          <div class="form-group checkbox-group">
             <label>
-              <input v-model="editingConnection.ignoreCert" type="checkbox" />
-              {{ $t('connection.ignoreCertVerification') }}
+              {{ $t('connection.address') }}
+              <span class="help-icon" :title="$t('connection.addressHelp')">
+                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" width="14" height="14">
+                  <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2"/>
+                  <path d="M12 16v-4M12 8h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+              </span>
             </label>
-          </div>
-        </div>
-        <div class="form-group">
-          <label>
-            {{ $t('connection.authentication') }}
-            <button type="button" class="auth-toggle" @click="editingConnection.useAuth = !editingConnection.useAuth">
-              {{ editingConnection.useAuth ? $t('connection.disable') : $t('connection.enable') }}
-            </button>
-          </label>
-          <div v-if="editingConnection.useAuth" class="auth-fields">
-            <div class="form-group">
-              <label>{{ $t('connection.username') }}</label>
-              <input v-model="editingConnection.username" type="text" placeholder="admin" />
-            </div>
-            <div class="form-group">
-              <label>{{ $t('connection.password') }}</label>
-              <input v-model="editingConnection.password" type="password" placeholder="••••••••" />
+            <div class="address-input-group">
+              <select v-model="editingConnection.protocol" class="protocol-select">
+                <option value="http">HTTP</option>
+                <option value="https">HTTPS</option>
+              </select>
+              <input v-model="editingConnection.address" type="text" placeholder="localhost:8086" class="address-input" />
             </div>
           </div>
+          <div v-if="editingConnection.protocol === 'https'" class="https-options">
+            <div class="form-group">
+              <label>{{ $t('connection.caCertificate') }}</label>
+              <div class="file-input-group">
+                <input v-model="editingConnection.caCert" type="text" placeholder="/path/to/ca.crt" />
+                <button type="button" class="btn-browse" @click="selectCaCertFile('edit')">
+                  {{ $t('connection.browse') }}
+                </button>
+              </div>
+            </div>
+            <div class="form-group">
+              <label>{{ $t('connection.clientCertificate') }}</label>
+              <div class="file-input-group">
+                <input v-model="editingConnection.clientCert" type="text" placeholder="/path/to/client.crt" />
+                <button type="button" class="btn-browse" @click="selectClientCertFile('edit')">
+                  {{ $t('connection.browse') }}
+                </button>
+              </div>
+            </div>
+            <div class="form-group">
+              <label>{{ $t('connection.clientKey') }}</label>
+              <div class="file-input-group">
+                <input v-model="editingConnection.clientKey" type="text" placeholder="/path/to/client.key" />
+                <button type="button" class="btn-browse" @click="selectClientKeyFile('edit')">
+                  {{ $t('connection.browse') }}
+                </button>
+              </div>
+            </div>
+            <div class="form-group checkbox-group">
+              <label>
+                <input v-model="editingConnection.insecureTls" type="checkbox" />
+                {{ $t('connection.insecureTls') }}
+              </label>
+            </div>
+            <div class="form-group checkbox-group">
+              <label>
+                <input v-model="editingConnection.insecureHostname" type="checkbox" />
+                {{ $t('connection.insecureHostname') }}
+              </label>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>
+              {{ $t('connection.authentication') }}
+              <button type="button" class="auth-toggle" @click="editingConnection.enableAuth = !editingConnection.enableAuth">
+                {{ editingConnection.enableAuth ? $t('connection.disable') : $t('connection.enable') }}
+              </button>
+            </label>
+            <div v-if="editingConnection.enableAuth" class="auth-fields">
+              <div class="form-group">
+                <label>{{ $t('connection.username') }}</label>
+                <input v-model="editingConnection.username" type="text" placeholder="admin" />
+              </div>
+              <div class="form-group">
+                <label>{{ $t('connection.password') }}</label>
+                <input v-model="editingConnection.password" type="password" placeholder="••••••••" />
+              </div>
+            </div>
+          </div>
         </div>
-        <div class="modal-actions">
+        <div class="modal-footer">
           <button @click="showEditConnection = false" class="btn-cancel">{{ $t('common.cancel') }}</button>
           <button @click="saveEditConnection" class="btn-save">{{ $t('common.save') }}</button>
         </div>
@@ -318,7 +368,7 @@
           </svg>
           <p class="error-message">{{ errorDialog.message }}</p>
         </div>
-        <div class="modal-actions">
+        <div class="modal-footer">
           <button @click="closeErrorDialog" class="btn-confirm">{{ $t('common.ok') }}</button>
         </div>
       </div>
@@ -344,7 +394,7 @@
           </svg>
           <p class="confirm-message">{{ confirmDialog.message }}</p>
         </div>
-        <div class="modal-actions">
+        <div class="modal-footer">
           <button @click="closeConfirmDialog" class="btn-cancel">{{ $t('common.cancel') }}</button>
           <button @click="handleConfirm" class="btn-confirm">{{ $t('common.confirm') }}</button>
         </div>
@@ -364,6 +414,7 @@ import { ref, onMounted } from 'vue'
 import type { SavedConnection, Database, ConnectionConfig } from '../types'
 import { AddConnect, DeleteConnect, ListConnects, UpdateConnect } from '../../wailsjs/go/main/App'
 import { main } from '../../wailsjs/go/models'
+import { OpenFileDialog } from '../../wailsjs/go/main/App'
 
 // Data transformation utilities
 const toBackendConfig = (config: ConnectionConfig): main.ConnectConfig => {
@@ -374,7 +425,9 @@ const toBackendConfig = (config: ConnectionConfig): main.ConnectConfig => {
     ca_certificate: config.caCert || '',
     client_certificate: config.clientCert || '',
     client_key: config.clientKey || '',
-    ignore_certificate_verification: config.ignoreCert || false,
+    insecure_tls: config.insecureTls || false,
+    insecure_hostname: config.insecureHostname || false,
+    enable_auth: config.enableAuth || false,
     username: config.username || '',
     password: config.password || ''
   }
@@ -389,7 +442,9 @@ const fromBackendConfig = (config: main.ConnectConfig): SavedConnection => {
     caCert: config.ca_certificate,
     clientCert: config.client_certificate,
     clientKey: config.client_key,
-    ignoreCert: config.ignore_certificate_verification,
+    insecureTls: config.insecure_tls,
+    insecureHostname: config.insecure_hostname,
+    enableAuth: config.enable_auth,
     username: config.username,
     password: config.password,
     database: '',
@@ -419,14 +474,15 @@ const editingConnection = ref<SavedConnection>({
   name: '',
   protocol: 'http',
   address: '',
-  useAuth: false,
+  enableAuth: false,
   username: '',
   password: '',
   database: '',
   caCert: '',
   clientCert: '',
   clientKey: '',
-  ignoreCert: false,
+  insecureTls: false,
+  insecureHostname: false,
   expanded: false,
   connected: false,
   databases: []
@@ -449,14 +505,15 @@ const newConnection = ref<ConnectionConfig>({
   name: 'localhost',
   protocol: 'http',
   address: 'localhost:8086',
-  useAuth: false,
+  enableAuth: false,
   username: '',
   password: '',
   database: '',
   caCert: '',
   clientCert: '',
   clientKey: '',
-  ignoreCert: false
+  insecureTls: false,
+  insecureHostname: false
 })
 
 // Error dialog state
@@ -549,14 +606,15 @@ const addConnection = async () => {
       name: 'localhost',
       protocol: 'http',
       address: 'localhost:8086',
-      useAuth: false,
+      enableAuth: false,
       username: '',
       password: '',
       database: '',
       caCert: '',
       clientCert: '',
       clientKey: '',
-      ignoreCert: false
+      insecureTls: false,
+      insecureHostname: false
     }
     showAddConnection.value = false
   } catch (error) {
@@ -620,16 +678,17 @@ const editConnection = (conn: SavedConnection) => {
     converted.address = ''
   }
 
-  // Ensure useAuth has a default value
-  if (converted.useAuth === undefined) {
-    converted.useAuth = !!(converted.username && converted.password)
+  // Ensure enableAuth has a default value
+  if (converted.enableAuth === undefined) {
+    converted.enableAuth = !!(converted.username && converted.password)
   }
 
   // Ensure optional fields have empty string defaults
   if (!converted.caCert) converted.caCert = ''
   if (!converted.clientCert) converted.clientCert = ''
   if (!converted.clientKey) converted.clientKey = ''
-  if (converted.ignoreCert === undefined) converted.ignoreCert = false
+  if (converted.insecureTls === undefined) converted.insecureTls = false
+  if (converted.insecureHostname === undefined) converted.insecureHostname = false
 
   editingConnection.value = converted
   showEditConnection.value = true
@@ -666,6 +725,52 @@ const refreshConnection = (conn: SavedConnection) => {
     setTimeout(() => {
       emit('connect', conn)
     }, 100)
+  }
+}
+
+// File selection functions
+const selectCaCertFile = async (type: 'new' | 'edit') => {
+  try {
+    const filePath = await OpenFileDialog()
+    if (filePath) {
+      if (type === 'new') {
+        newConnection.value.caCert = filePath
+      } else {
+        editingConnection.value.caCert = filePath
+      }
+    }
+  } catch (error) {
+    console.error('Failed to select CA certificate file:', error)
+  }
+}
+
+const selectClientCertFile = async (type: 'new' | 'edit') => {
+  try {
+    const filePath = await OpenFileDialog()
+    if (filePath) {
+      if (type === 'new') {
+        newConnection.value.clientCert = filePath
+      } else {
+        editingConnection.value.clientCert = filePath
+      }
+    }
+  } catch (error) {
+    console.error('Failed to select client certificate file:', error)
+  }
+}
+
+const selectClientKeyFile = async (type: 'new' | 'edit') => {
+  try {
+    const filePath = await OpenFileDialog()
+    if (filePath) {
+      if (type === 'new') {
+        newConnection.value.clientKey = filePath
+      } else {
+        editingConnection.value.clientKey = filePath
+      }
+    }
+  } catch (error) {
+    console.error('Failed to select client key file:', error)
   }
 }
 
@@ -984,16 +1089,43 @@ const startResize = (e: MouseEvent) => {
   background: var(--bg-secondary);
   border: 1px solid var(--border-color);
   border-radius: 8px;
-  padding: 24px;
   min-width: 400px;
   max-width: 500px;
+  width: 90%;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  overflow: hidden;
 }
 
-.modal-content h3 {
-  margin: 0 0 20px 0;
+.modal-header {
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--border-color);
+  flex-shrink: 0;
+}
+
+.modal-header h3 {
+  margin: 0;
   font-size: 18px;
   color: var(--text-primary);
+}
+
+.modal-body {
+  padding: 20px 24px;
+  overflow-y: auto;
+  flex: 1;
+  min-height: 0;
+}
+
+.modal-footer {
+  padding: 16px 24px;
+  border-top: 1px solid var(--border-color);
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  flex-shrink: 0;
+  background: var(--bg-secondary);
 }
 
 .form-group {
@@ -1024,11 +1156,31 @@ const startResize = (e: MouseEvent) => {
   border-color: var(--accent-color);
 }
 
-.modal-actions {
+.file-input-group {
   display: flex;
-  justify-content: flex-end;
   gap: 8px;
-  margin-top: 20px;
+  align-items: center;
+}
+
+.file-input-group input {
+  flex: 1;
+}
+
+.btn-browse {
+  padding: 8px 16px;
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  font-size: 14px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.2s;
+}
+
+.btn-browse:hover {
+  background: var(--bg-hover);
+  border-color: var(--accent-color);
 }
 
 .btn-cancel,

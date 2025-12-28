@@ -4,15 +4,18 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"sync"
 
+	"github.com/wailsapp/wails/v2/pkg/runtime"
 	bolt "go.etcd.io/bbolt"
 )
 
 // App struct
 type App struct {
-	ctx    context.Context
-	db     *bolt.DB
-	logger *Logger
+	ctx      context.Context
+	db       *bolt.DB
+	connects sync.Map
+	logger   *Logger
 }
 
 // NewApp creates a new App application struct
@@ -166,4 +169,11 @@ func (app *App) GetSetting() (*AppSetting, error) {
 		return json.Unmarshal(data, setting)
 	})
 	return setting, err
+}
+
+func (app *App) OpenFileDialog() (string, error) {
+	filePath, err := runtime.OpenFileDialog(app.ctx, runtime.OpenDialogOptions{
+		Title: "Select File",
+	})
+	return filePath, err
 }

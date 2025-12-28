@@ -7,14 +7,15 @@ export interface ConnectionConfig {
   // New fields
   protocol?: 'http' | 'https'
   address?: string
-  useAuth?: boolean
+  enableAuth?: boolean
   username: string
   password: string
   database: string
   caCert?: string
   clientCert?: string
   clientKey?: string
-  ignoreCert?: boolean
+  insecureTls?: boolean
+  insecureHostname?: boolean
 }
 
 export interface Measurement {
