@@ -10,6 +10,10 @@ export function DeleteConnect(arg1) {
   return window['go']['main']['App']['DeleteConnect'](arg1);
 }
 
+export function DialConnect(arg1) {
+  return window['go']['main']['App']['DialConnect'](arg1);
+}
+
 export function GetConnect(arg1) {
   return window['go']['main']['App']['GetConnect'](arg1);
 }

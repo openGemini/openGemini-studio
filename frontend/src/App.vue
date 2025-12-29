@@ -132,39 +132,10 @@ const handleDisconnect = () => {
   selectedRetentionPolicy.value = ''
 }
 
-const handleConnectToDatabase = (connection: SavedConnection) => {
-  connection.connected = true
-  connection.expanded = true
-  
-  connection.databases = [
-    {
-      name: 'telegraf',
-      expanded: false,
-      measurements: [
-        { name: 'cpu', fields: ['usage_idle', 'usage_system', 'usage_user'] },
-        { name: 'mem', fields: ['used_percent', 'available', 'total'] },
-        { name: 'disk', fields: ['used_percent', 'free', 'total'] }
-      ],
-      retentionPolicies: [
-        { name: 'autogen', duration: 'INF', replication: 1, isDefault: true },
-        { name: 'one_week', duration: '168h', replication: 1, isDefault: false },
-        { name: 'one_month', duration: '720h', replication: 1, isDefault: false }
-      ]
-    },
-    {
-      name: 'monitoring',
-      expanded: false,
-      measurements: [
-        { name: 'http_requests', fields: ['count', 'duration', 'status'] },
-        { name: 'system_metrics', fields: ['load1', 'load5', 'load15'] }
-      ],
-      retentionPolicies: [
-        { name: 'autogen', duration: 'INF', replication: 1, isDefault: true },
-        { name: 'short_term', duration: '24h', replication: 1, isDefault: false }
-      ]
-    }
-  ]
-  
+const handleConnectToDatabase = (_connection: SavedConnection) => {
+  // Connection is already established in ConnectionManager
+  // Database list is already populated via DialConnect
+  // Just need to select a default database if none selected
   if (availableDatabases.value.length > 0 && !selectedDatabase.value) {
     selectedDatabase.value = availableDatabases.value[0].name
   }

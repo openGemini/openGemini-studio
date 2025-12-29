@@ -41,6 +41,7 @@ type HttpClient interface {
 	Ping() error
 	Query(context.Context, *opengemini.Query) (*opengemini.QueryResult, error)
 	Write(ctx context.Context, database, retentionPolicy, raw, precision string) error
+	Databases(ctx context.Context) ([]string, error)
 }
 
 type HttpClientCreator struct {
@@ -48,6 +49,37 @@ type HttpClientCreator struct {
 	client   *http.Client
 	basic    string
 	debug    bool
+}
+
+func (h *HttpClientCreator) Databases(ctx context.Context) ([]string, error) {
+	response, err := h.Query(ctx, &opengemini.Query{
+		Command: "show databases",
+	})
+	if err != nil {
+		return nil, err
+	}
+	if len(response.Error) > 0 {
+		return nil, fmt.Errorf("show datababse failed: %s", response.Error)
+	}
+	if len(response.Results) == 0 || len(response.Results[0].Series) == 0 {
+		return []string{}, nil
+	}
+	var (
+		values   = response.Results[0].Series[0].Values
+		dbResult = make([]string, 0, len(values))
+	)
+
+	for _, v := range values {
+		if len(v) == 0 {
+			continue
+		}
+		val, ok := v[0].(string)
+		if !ok {
+			continue
+		}
+		dbResult = append(dbResult, val)
+	}
+	return dbResult, nil
 }
 
 func (h *HttpClientCreator) SetAuth(username, password string) {

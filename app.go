@@ -1,3 +1,17 @@
+// Copyright 2025 openGemini Authors
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 package main
 
 import (
@@ -176,4 +190,31 @@ func (app *App) OpenFileDialog() (string, error) {
 		Title: "Select File",
 	})
 	return filePath, err
+}
+
+func (app *App) DialConnect(name string) ([]string, error) {
+	app.connects.Delete(name)
+	cc, err := app.GetConnect(name)
+	if err != nil {
+		app.logger.Error("dial connect failed: find connect config failed", "reason", err)
+		return nil, err
+	}
+	httpClient, err := NewHttpClient(cc)
+	if err != nil {
+		app.logger.Error("dial connect failed: create http client failed", "reason", err)
+		return nil, err
+	}
+	err = httpClient.Ping()
+	if err != nil {
+		app.logger.Error("dial connect failed: ping http client failed", "reason", err)
+		return nil, err
+	}
+	app.connects.Store(name, httpClient)
+
+	databases, err := httpClient.Databases(app.ctx)
+	if err != nil {
+		app.logger.Error("dial connect failed: databases failed", "reason", err)
+		return nil, err
+	}
+	return databases, nil
 }

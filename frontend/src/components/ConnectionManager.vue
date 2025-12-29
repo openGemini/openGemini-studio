@@ -412,9 +412,8 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import type { SavedConnection, Database, ConnectionConfig } from '../types'
-import { AddConnect, DeleteConnect, ListConnects, UpdateConnect } from '../../wailsjs/go/main/App'
+import { AddConnect, DeleteConnect, ListConnects, UpdateConnect, DialConnect, OpenFileDialog } from '../../wailsjs/go/main/App'
 import { main } from '../../wailsjs/go/models'
-import { OpenFileDialog } from '../../wailsjs/go/main/App'
 
 // Data transformation utilities
 const toBackendConfig = (config: ConnectionConfig): main.ConnectConfig => {
@@ -636,8 +635,31 @@ const deleteConnection = async (id: string) => {
   })
 }
 
-const connectToDatabase = (conn: SavedConnection) => {
-  emit('connect', conn)
+const connectToDatabase = async (conn: SavedConnection) => {
+  try {
+    // Call DialConnect to establish connection and get database list
+    const databaseNames = await DialConnect(conn.id)
+
+    // Convert database names to Database objects
+    const databases: Database[] = databaseNames.map(name => ({
+      name,
+      expanded: false,
+      measurements: [],
+      retentionPolicies: []
+    }))
+
+    // Update connection status and databases
+    conn.connected = true
+    conn.expanded = true
+    conn.databases = databases
+
+    // Emit connect event to parent component
+    emit('connect', conn)
+  } catch (error) {
+    // Show error dialog if connection failed
+    const errorMessage = error instanceof Error ? error.message : String(error)
+    showError(error, `Failed to connect to database: ${errorMessage}`)
+  }
 }
 
 const disconnectFromDatabase = (conn: SavedConnection) => {

@@ -6,6 +6,8 @@ export function AddConnect(arg1:main.ConnectConfig):Promise<void>;
 
 export function DeleteConnect(arg1:string):Promise<void>;
 
+export function DialConnect(arg1:string):Promise<Array<string>>;
+
 export function GetConnect(arg1:string):Promise<main.ConnectConfig>;
 
 export function GetSetting():Promise<main.AppSetting>;
