@@ -42,6 +42,8 @@ type HttpClient interface {
 	Query(context.Context, *opengemini.Query) (*opengemini.QueryResult, error)
 	Write(ctx context.Context, database, retentionPolicy, raw, precision string) error
 	Databases(ctx context.Context) ([]string, error)
+	RetentionPolicies(ctx context.Context, database string) ([]*RetentionPolicy, error)
+	Measurements(ctx context.Context, database string) ([]string, error)
 }
 
 type HttpClientCreator struct {
@@ -51,9 +53,75 @@ type HttpClientCreator struct {
 	debug    bool
 }
 
+func (h *HttpClientCreator) RetentionPolicies(ctx context.Context, database string) ([]*RetentionPolicy, error) {
+	response, err := h.Query(ctx, &opengemini.Query{
+		Database: database,
+		Command:  "SHOW RETENTION POLICIES",
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	if response.Error != "" {
+		return nil, fmt.Errorf("show retention policies failed: %s", response.Error)
+	}
+
+	if len(response.Results) == 0 || len(response.Results[0].Series) == 0 {
+		return nil, nil
+	}
+	var (
+		seriesValues    = response.Results[0].Series[0].Values
+		column          = response.Results[0].Series[0].Columns
+		retentionPolicy = make([]*RetentionPolicy, 0, len(seriesValues))
+	)
+
+	for idx, v := range seriesValues {
+		columnName := column[idx]
+		var name, duration string
+		if columnName == "name" {
+			name = v[0].(string)
+		}
+		if columnName == "duration" {
+			duration = v[0].(string)
+		}
+		retentionPolicy = append(retentionPolicy, &RetentionPolicy{
+			Name:     name,
+			Duration: duration,
+		})
+	}
+	return retentionPolicy, nil
+}
+
+func (h *HttpClientCreator) Measurements(ctx context.Context, database string) ([]string, error) {
+	response, err := h.Query(ctx, &opengemini.Query{
+		Database: database,
+		Command:  "SHOW MEASUREMENTS",
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	if response.Error != "" {
+		return nil, fmt.Errorf("show measurements failed: %s", response.Error)
+	}
+
+	if len(response.Results) == 0 || len(response.Results[0].Series) == 0 {
+		return nil, nil
+	}
+	var (
+		seriesValues = response.Results[0].Series[0].Values
+		measurements = make([]string, 0, len(seriesValues))
+	)
+
+	for _, v := range seriesValues {
+		measurements = append(measurements, v[0].(string))
+	}
+	return measurements, nil
+}
+
 func (h *HttpClientCreator) Databases(ctx context.Context) ([]string, error) {
 	response, err := h.Query(ctx, &opengemini.Query{
-		Command: "show databases",
+		Command: "SHOW DATABASES",
 	})
 	if err != nil {
 		return nil, err

@@ -67,7 +67,7 @@
 
         <div v-if="conn.expanded && conn.connected" class="connection-content">
           <div v-for="db in conn.databases" :key="db.name" class="database-item">
-            <div class="database-header" @click="toggleDatabase(db)">
+            <div class="database-header" @dblclick="loadDatabaseMetadata(db, conn)">
               <!-- Replace database expand/collapse with SVG chevron -->
               <svg v-if="!db.expanded" class="icon-chevron indent" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path d="M9 18l6-6-6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
@@ -412,7 +412,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import type { SavedConnection, Database, ConnectionConfig } from '../types'
-import { AddConnect, DeleteConnect, ListConnects, UpdateConnect, DialConnect, OpenFileDialog } from '../../wailsjs/go/main/App'
+import { AddConnect, DeleteConnect, ListConnects, UpdateConnect, DialConnect, OpenFileDialog, GetDatabaseMetadata } from '../../wailsjs/go/main/App'
 import { main } from '../../wailsjs/go/models'
 
 // Data transformation utilities
@@ -463,6 +463,7 @@ const emit = defineEmits<{
   'select-measurement': [data: { measurement: string; database: string; connection: SavedConnection }]
   'connect': [connection: SavedConnection]
   'disconnect': [connectionId: string]
+  'update-retention-policies': [data: { policies: any[]; database: string }]
 }>()
 
 const sidebarWidth = ref(300)
@@ -566,8 +567,38 @@ const toggleConnection = (conn: SavedConnection) => {
   }
 }
 
-const toggleDatabase = (db: Database) => {
-  db.expanded = !db.expanded
+const loadDatabaseMetadata = async (db: Database, conn: SavedConnection) => {
+  try {
+    // Toggle expanded state
+    db.expanded = !db.expanded
+
+    // If expanding and measurements not loaded yet, fetch metadata
+    if (db.expanded && db.measurements.length === 0) {
+      const metadata = await GetDatabaseMetadata(conn.id, db.name)
+
+      // Convert measurements from string[] to Measurement[] format
+      db.measurements = metadata.Measurements.map(name => ({
+        name,
+        fields: []
+      }))
+
+      // Convert retention policies from backend format to frontend format
+      db.retentionPolicies = metadata.retention_policies.map(policy => ({
+        name: policy.name,
+        duration: policy.duration,
+        replication: 1,  // Default value
+        isDefault: policy.name === 'autogen'  // Default policy is usually 'autogen'
+      }))
+
+      // Emit retention policies to parent component
+      emit('update-retention-policies', {
+        policies: db.retentionPolicies,
+        database: db.name
+      })
+    }
+  } catch (error) {
+    showError(error, `Failed to load metadata for database: ${db.name}`)
+  }
 }
 
 const selectMeasurement = (measurement: string, database: string, connection: SavedConnection) => {

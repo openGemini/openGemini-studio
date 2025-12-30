@@ -218,3 +218,31 @@ func (app *App) DialConnect(name string) ([]string, error) {
 	}
 	return databases, nil
 }
+
+func (app *App) getDialer(name string) (HttpClient, error) {
+	value, ok := app.connects.Load(name)
+	if !ok {
+		return nil, errors.New("dialer not found")
+	}
+	return value.(HttpClient), nil
+}
+
+func (app *App) GetDatabaseMetadata(connectName, databaseName string) (*DatabaseMetadata, error) {
+	httpClient, err := app.getDialer(connectName)
+	if err != nil {
+		app.logger.Error("get opengemini client failed", "reason", err, "name", connectName)
+		return nil, err
+	}
+	policies, err := httpClient.RetentionPolicies(app.ctx, databaseName)
+	if err != nil {
+		app.logger.Error("get retention policies failed", "reason", err, "db", databaseName)
+		return nil, err
+	}
+	measurements, err := httpClient.Measurements(app.ctx, databaseName)
+	if err != nil {
+		app.logger.Error("get measurements failed", "reason", err, "db", databaseName)
+		return nil, err
+	}
+
+	return &DatabaseMetadata{RetentionPolicy: policies, Measurements: measurements}, nil
+}

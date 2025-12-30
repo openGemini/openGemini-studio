@@ -18,6 +18,10 @@ export function GetConnect(arg1) {
   return window['go']['main']['App']['GetConnect'](arg1);
 }
 
+export function GetDatabaseMetadata(arg1, arg2) {
+  return window['go']['main']['App']['GetDatabaseMetadata'](arg1, arg2);
+}
+
 export function GetSetting() {
   return window['go']['main']['App']['GetSetting']();
 }

@@ -21,6 +21,7 @@
         @select-measurement="handleSelectMeasurement"
         @connect="handleConnectToDatabase"
         @disconnect="handleDisconnectFromDatabase"
+        @update-retention-policies="handleUpdateRetentionPolicies"
       />
       
       <div class="editor-results-container">
@@ -153,6 +154,19 @@ const handleDisconnectFromDatabase = (connectionId: string) => {
 const handleSelectMeasurement = (data: { measurement: string; database: string; connection: SavedConnection }) => {
   query.value = `SELECT * FROM "${data.measurement}" LIMIT 100`
   selectedDatabase.value = data.database
+}
+
+const handleUpdateRetentionPolicies = (data: { policies: any[]; database: string }) => {
+  // If this is the currently selected database and no retention policy is selected,
+  // select the default one (usually 'autogen') or the first one
+  if (data.database === selectedDatabase.value && !selectedRetentionPolicy.value) {
+    const defaultPolicy = data.policies.find(p => p.isDefault)
+    if (defaultPolicy) {
+      selectedRetentionPolicy.value = defaultPolicy.name
+    } else if (data.policies.length > 0) {
+      selectedRetentionPolicy.value = data.policies[0].name
+    }
+  }
 }
 
 const handleQueryUpdate = (newQuery: string) => {

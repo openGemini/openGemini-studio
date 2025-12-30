@@ -43,6 +43,7 @@ func main() {
 		Bind: []interface{}{
 			app,
 			&ConnectConfig{},
+			&DatabaseMetadata{},
 		},
 	})
 

@@ -10,6 +10,8 @@ export function DialConnect(arg1:string):Promise<Array<string>>;
 
 export function GetConnect(arg1:string):Promise<main.ConnectConfig>;
 
+export function GetDatabaseMetadata(arg1:string,arg2:string):Promise<main.DatabaseMetadata>;
+
 export function GetSetting():Promise<main.AppSetting>;
 
 export function ListConnects():Promise<Array<main.ConnectConfig>>;

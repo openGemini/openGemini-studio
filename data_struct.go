@@ -54,3 +54,13 @@ func (as *AppSetting) Marshal() []byte {
 	}
 	return data
 }
+
+type RetentionPolicy struct {
+	Name     string `json:"name"`
+	Duration string `json:"duration"`
+}
+
+type DatabaseMetadata struct {
+	RetentionPolicy []*RetentionPolicy `json:"retention_policies"`
+	Measurements    []string           `yaml:"measurements"`
+}
