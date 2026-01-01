@@ -412,7 +412,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import type { SavedConnection, Database, ConnectionConfig } from '../types'
-import { AddConnect, DeleteConnect, ListConnects, UpdateConnect, DialConnect, OpenFileDialog, GetDatabaseMetadata } from '../../wailsjs/go/main/App'
+import { AddConnect, DeleteConnect, ListConnects, UpdateConnect, DialConnect, OpenFileDialog, GetDatabaseMetadata, CloseConnect } from '../../wailsjs/go/main/App'
 import { main } from '../../wailsjs/go/models'
 
 // Data transformation utilities
@@ -668,6 +668,24 @@ const deleteConnection = async (id: string) => {
 
 const connectToDatabase = async (conn: SavedConnection) => {
   try {
+    // Disconnect all other connections before connecting to this one
+    // This ensures only one connection is active at a time
+    for (const existingConn of props.connections) {
+      if (existingConn.id !== conn.id && existingConn.connected) {
+        try {
+          // Call backend to close the connection
+          await CloseConnect(existingConn.id)
+
+          // Update frontend state
+          existingConn.connected = false
+          existingConn.expanded = false
+          existingConn.databases = []
+        } catch (error) {
+          console.error(`Failed to close connection ${existingConn.id}:`, error)
+        }
+      }
+    }
+
     // Call DialConnect to establish connection and get database list
     const databaseNames = await DialConnect(conn.id)
 

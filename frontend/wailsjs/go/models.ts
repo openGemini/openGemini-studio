@@ -98,6 +98,74 @@ export namespace main {
 		    return a;
 		}
 	}
+	export class ExecuteRequest {
+	    connect_name: string;
+	    database: string;
+	    retention_policy: string;
+	    measurement: string;
+	    precision: string;
+	    command: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new ExecuteRequest(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.connect_name = source["connect_name"];
+	        this.database = source["database"];
+	        this.retention_policy = source["retention_policy"];
+	        this.measurement = source["measurement"];
+	        this.precision = source["precision"];
+	        this.command = source["command"];
+	    }
+	}
+	export class ExecuteResponse {
+	    no_content: boolean;
+	    message: string;
+	    execution_time: number;
+	    columns: string[];
+	    values: any[][];
+	
+	    static createFrom(source: any = {}) {
+	        return new ExecuteResponse(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.no_content = source["no_content"];
+	        this.message = source["message"];
+	        this.execution_time = source["execution_time"];
+	        this.columns = source["columns"];
+	        this.values = source["values"];
+	    }
+	}
+	export class History {
+	    id: string;
+	    query: string;
+	    timestamp: number;
+	    execution_time: number;
+	    database: string;
+	    retention_policy: string;
+	    success: boolean;
+	    error: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new History(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.id = source["id"];
+	        this.query = source["query"];
+	        this.timestamp = source["timestamp"];
+	        this.execution_time = source["execution_time"];
+	        this.database = source["database"];
+	        this.retention_policy = source["retention_policy"];
+	        this.success = source["success"];
+	        this.error = source["error"];
+	    }
+	}
 
 }
 

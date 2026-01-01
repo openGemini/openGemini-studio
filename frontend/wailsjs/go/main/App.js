@@ -6,6 +6,14 @@ export function AddConnect(arg1) {
   return window['go']['main']['App']['AddConnect'](arg1);
 }
 
+export function AddHistory(arg1) {
+  return window['go']['main']['App']['AddHistory'](arg1);
+}
+
+export function CloseConnect(arg1) {
+  return window['go']['main']['App']['CloseConnect'](arg1);
+}
+
 export function DeleteConnect(arg1) {
   return window['go']['main']['App']['DeleteConnect'](arg1);
 }
@@ -14,12 +22,20 @@ export function DialConnect(arg1) {
   return window['go']['main']['App']['DialConnect'](arg1);
 }
 
+export function ExecuteCommand(arg1) {
+  return window['go']['main']['App']['ExecuteCommand'](arg1);
+}
+
 export function GetConnect(arg1) {
   return window['go']['main']['App']['GetConnect'](arg1);
 }
 
 export function GetDatabaseMetadata(arg1, arg2) {
   return window['go']['main']['App']['GetDatabaseMetadata'](arg1, arg2);
+}
+
+export function GetHistories() {
+  return window['go']['main']['App']['GetHistories']();
 }
 
 export function GetSetting() {

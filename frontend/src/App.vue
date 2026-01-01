@@ -41,9 +41,11 @@
         />
         
         <ResultsTable
-          :results="results"
+          :columns="resultColumns"
+          :values="resultValues"
           :execution-time="executionTime"
           :error="error"
+          :success="executionSuccess"
         />
       </div>
 
@@ -78,8 +80,10 @@ import Settings from './components/Settings.vue'
 import { useTheme } from './composables/useTheme'
 import { useSettings } from './composables/useSettings'
 import type { SavedConnection, QueryHistoryItem, Database, AppSettings } from './types'
+import { CloseConnect, ExecuteCommand, GetHistories } from '../wailsjs/go/main/App'
+import { main } from '../wailsjs/go/models'
 
-const { locale } = useI18n()
+const { locale, t } = useI18n()
 const themeComposable = useTheme()
 const settingsComposable = useSettings()
 
@@ -90,13 +94,16 @@ const appSettings = settingsComposable.settings
 const settingsVisible = ref(false)
 
 const query = ref('SELECT * FROM measurement_name LIMIT 100')
-const results = ref<any[]>([])
+const resultColumns = ref<string[]>([])
+const resultValues = ref<any[][]>([])
 const executionTime = ref(0)
 const error = ref('')
+const executionSuccess = ref(false)
 const sidebarCollapsed = ref(false)
 const historyVisible = ref(false)
 const queryHistory = ref<QueryHistoryItem[]>([])
 const selectedDatabase = ref('')
+const selectedMeasurement = ref('')
 const selectedRetentionPolicy = ref('')
 const selectedPrecision = ref('ms')
 
@@ -122,14 +129,30 @@ const handleConnect = () => {
   // Legacy connect handler - not used anymore
 }
 
-const handleDisconnect = () => {
+const handleDisconnect = async () => {
+  // Close all connections on backend
+  for (const conn of connections.value) {
+    if (conn.connected) {
+      try {
+        await CloseConnect(conn.id)
+      } catch (error) {
+        console.error(`Failed to close connection ${conn.id}:`, error)
+      }
+    }
+  }
+
+  // Update frontend state
   connections.value.forEach(c => {
     c.connected = false
     c.databases = []
+    c.expanded = false
   })
-  results.value = []
+  resultColumns.value = []
+  resultValues.value = []
+  executionSuccess.value = false
   error.value = ''
   selectedDatabase.value = ''
+  selectedMeasurement.value = ''
   selectedRetentionPolicy.value = ''
 }
 
@@ -139,18 +162,31 @@ const handleConnectToDatabase = (_connection: SavedConnection) => {
   // Database selection is handled by watcher
 }
 
-const handleDisconnectFromDatabase = (connectionId: string) => {
+const handleDisconnectFromDatabase = async (connectionId: string) => {
   const connection = connections.value.find(c => c.id === connectionId)
   if (connection) {
-    connection.connected = false
-    connection.databases = []
-    connection.expanded = false
+    try {
+      // Call backend to close the connection
+      await CloseConnect(connectionId)
+
+      // Update frontend state
+      connection.connected = false
+      connection.databases = []
+      connection.expanded = false
+    } catch (error) {
+      console.error(`Failed to close connection ${connectionId}:`, error)
+      // Still update frontend state even if backend call fails
+      connection.connected = false
+      connection.databases = []
+      connection.expanded = false
+    }
   }
 }
 
 const handleSelectMeasurement = (data: { measurement: string; database: string; connection: SavedConnection }) => {
   query.value = `SELECT * FROM "${data.measurement}" LIMIT 100`
   selectedDatabase.value = data.database
+  selectedMeasurement.value = data.measurement
 }
 
 const handleUpdateRetentionPolicies = (data: { policies: any[]; database: string }) => {
@@ -171,73 +207,137 @@ const handleQueryUpdate = (newQuery: string) => {
 }
 
 const handleSelectHistoryQuery = (historyQuery: string) => {
-  query.value = historyQuery
+  // Append to existing query instead of replacing
+  if (query.value.trim()) {
+    // If there's existing content, add a newline separator and append
+    query.value = query.value.trim() + '\n\n' + historyQuery
+  } else {
+    // If empty, just set the query
+    query.value = historyQuery
+  }
 }
 
 const queryEditorRef = ref<InstanceType<typeof QueryEditor> | null>(null)
 
-const executeQuery = () => {
+const executeQuery = async () => {
   // Get the actual query to execute from QueryEditor
   const queryToExecute = queryEditorRef.value?.getQueryToExecute() || query.value
-  
+
   if (!queryToExecute.trim()) {
     error.value = 'No query to execute'
     return
   }
-  
-  const startTime = performance.now()
+
+  // Get the active connection
+  const activeConnection = connections.value.find(c => c.connected)
+  if (!activeConnection) {
+    error.value = 'No active connection. Please connect to a database first.'
+    return
+  }
+
   error.value = ''
-  
+  executionSuccess.value = false
+  resultColumns.value = []
+  resultValues.value = []
+
   try {
-    results.value = [
-      { time: '2024-01-15T10:30:00Z', host: 'server-01', cpu: '45.2', memory: '2048', status: 'active' },
-      { time: '2024-01-15T10:31:00Z', host: 'server-01', cpu: '48.7', memory: '2056', status: 'active' },
-      { time: '2024-01-15T10:32:00Z', host: 'server-02', cpu: '52.1', memory: '3072', status: 'active' },
-      { time: '2024-01-15T10:33:00Z', host: 'server-02', cpu: '49.8', memory: '3068', status: 'active' },
-      { time: '2024-01-15T10:34:00Z', host: 'server-03', cpu: '41.3', memory: '1536', status: 'active' }
-    ]
-    
-    const endTime = performance.now()
-    executionTime.value = endTime - startTime
-    
-    queryHistory.value.unshift({
-      id: Date.now().toString(),
-      query: queryToExecute,
-      timestamp: new Date(),
-      executionTime: executionTime.value,
-      database: selectedDatabase.value || undefined,
-      retentionPolicy: selectedRetentionPolicy.value || undefined,
-      success: true
-    })
-    
-    if (queryHistory.value.length > appSettings.value.maxHistoryCount) {
-      queryHistory.value = queryHistory.value.slice(0, appSettings.value.maxHistoryCount)
+    const request: main.ExecuteRequest = {
+      connect_name: activeConnection.id,
+      database: selectedDatabase.value,
+      retention_policy: selectedRetentionPolicy.value || '',
+      measurement: selectedMeasurement.value || '',
+      precision: selectedPrecision.value,
+      command: queryToExecute
+    }
+
+    const response = await ExecuteCommand(request)
+    // Use backend-measured execution time
+    executionTime.value = response.execution_time || 0
+
+    // Handle response based on NoContent flag
+    if (response.no_content) {
+      // Command executed successfully but has no results (like INSERT, DELETE, etc.)
+      // Display as a table with Status and Message from backend
+      executionSuccess.value = false
+      resultColumns.value = [t('results.status'), t('results.message')]
+      resultValues.value = [[t('results.success'), response.message || '']]
+    } else {
+      // Query returned results
+      executionSuccess.value = false
+      resultColumns.value = response.columns || []
+      resultValues.value = response.values || []
+    }
+
+    // Reload query history from backend
+    try {
+      const histories = await GetHistories()
+      queryHistory.value = histories.map(h => ({
+        id: h.id,
+        query: h.query,
+        timestamp: new Date(h.timestamp),
+        executionTime: h.execution_time,
+        database: h.database || undefined,
+        retentionPolicy: h.retention_policy || undefined,
+        success: h.success,
+        error: h.error || undefined
+      }))
+    } catch (err) {
+      console.error('Failed to reload query history:', err)
     }
   } catch (e) {
-    error.value = e instanceof Error ? e.message : 'Query execution failed'
-    
-    queryHistory.value.unshift({
-      id: Date.now().toString(),
-      query: queryToExecute,
-      timestamp: new Date(),
-      executionTime: 0,
-      database: selectedDatabase.value || undefined,
-      retentionPolicy: selectedRetentionPolicy.value || undefined,
-      success: false,
-      error: error.value
-    })
+    // For errors, execution time is set by backend
+    executionTime.value = 0
+
+    // Display error as a table with Status and Message columns
+    // Extract error message from different error types
+    let errorMessage: string
+    if (e instanceof Error) {
+      errorMessage = e.message
+    } else if (typeof e === 'string') {
+      errorMessage = e
+    } else if (e && typeof e === 'object' && 'message' in e) {
+      errorMessage = String((e as any).message)
+    } else {
+      errorMessage = String(e)
+    }
+
+    // Fallback to default message if empty
+    if (!errorMessage || errorMessage.trim() === '') {
+      errorMessage = 'Query execution failed'
+    }
+
+    resultColumns.value = [t('results.status'), t('results.message')]
+    resultValues.value = [[t('results.failed'), errorMessage]]
+    error.value = ''
+    executionSuccess.value = false
+
+    // Reload query history from backend (error is also saved by backend)
+    try {
+      const histories = await GetHistories()
+      queryHistory.value = histories.map(h => ({
+        id: h.id,
+        query: h.query,
+        timestamp: new Date(h.timestamp),
+        executionTime: h.execution_time,
+        database: h.database || undefined,
+        retentionPolicy: h.retention_policy || undefined,
+        success: h.success,
+        error: h.error || undefined
+      }))
+    } catch (err) {
+      console.error('Failed to reload query history:', err)
+    }
   }
 }
 
 const exportResults = () => {
-  if (results.value.length === 0) return
-  
-  const headers = Object.keys(results.value[0])
+  if (resultValues.value.length === 0 || resultColumns.value.length === 0) return
+
   const csv = [
-    headers.join(','),
-    ...results.value.map(row => headers.map(h => row[h]).join(','))
+    resultColumns.value.join(','),
+    ...resultValues.value.map(row => row.join(','))
   ].join('\n')
-  
+
   const blob = new Blob([csv], { type: 'text/csv' })
   const url = URL.createObjectURL(blob)
   const a = document.createElement('a')
@@ -263,6 +363,9 @@ watch(availableDatabases, (newDatabases) => {
 // Watch selectedDatabase and auto-select the first retention policy
 watch(selectedDatabase, (newDatabase) => {
   if (newDatabase) {
+    // Clear selected measurement when database changes
+    selectedMeasurement.value = ''
+
     const db = availableDatabases.value.find(d => d.name === newDatabase)
     if (db && db.retentionPolicies && db.retentionPolicies.length > 0) {
       const defaultPolicy = db.retentionPolicies.find(p => p.isDefault)
@@ -271,6 +374,7 @@ watch(selectedDatabase, (newDatabase) => {
       selectedRetentionPolicy.value = ''
     }
   } else {
+    selectedMeasurement.value = ''
     selectedRetentionPolicy.value = ''
   }
 })
@@ -304,12 +408,29 @@ watch(() => appSettings.value.customFont, (newFont) => {
   }
 }, { immediate: true })
 
-onMounted(() => {
+onMounted(async () => {
   themeComposable.initTheme()
   settingsComposable.initSettings()
 
   // Set initial locale
   locale.value = appSettings.value.language as 'en' | 'zh-CN'
+
+  // Load query history from backend
+  try {
+    const histories = await GetHistories()
+    queryHistory.value = histories.map(h => ({
+      id: h.id,
+      query: h.query,
+      timestamp: new Date(h.timestamp),
+      executionTime: h.execution_time,
+      database: h.database || undefined,
+      retentionPolicy: h.retention_policy || undefined,
+      success: h.success,
+      error: h.error || undefined
+    }))
+  } catch (err) {
+    console.error('Failed to load query history:', err)
+  }
 
   if (typeof window !== 'undefined' && window.matchMedia) {
     const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)')

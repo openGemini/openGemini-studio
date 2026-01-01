@@ -4,13 +4,21 @@ import {main} from '../models';
 
 export function AddConnect(arg1:main.ConnectConfig):Promise<void>;
 
+export function AddHistory(arg1:main.History):Promise<void>;
+
+export function CloseConnect(arg1:string):Promise<void>;
+
 export function DeleteConnect(arg1:string):Promise<void>;
 
 export function DialConnect(arg1:string):Promise<Array<string>>;
 
+export function ExecuteCommand(arg1:main.ExecuteRequest):Promise<main.ExecuteResponse>;
+
 export function GetConnect(arg1:string):Promise<main.ConnectConfig>;
 
 export function GetDatabaseMetadata(arg1:string,arg2:string):Promise<main.DatabaseMetadata>;
+
+export function GetHistories():Promise<Array<main.History>>;
 
 export function GetSetting():Promise<main.AppSetting>;
 

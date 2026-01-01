@@ -64,3 +64,39 @@ type DatabaseMetadata struct {
 	RetentionPolicy []*RetentionPolicy `json:"retention_policies"`
 	Measurements    []string           `json:"measurements"`
 }
+
+type ExecuteRequest struct {
+	ConnectName     string `json:"connect_name"`
+	Database        string `json:"database"`
+	RetentionPolicy string `json:"retention_policy"`
+	Measurement     string `json:"measurement"`
+	Precision       string `json:"precision"`
+	Command         string `json:"command"`
+}
+
+type ExecuteResponse struct {
+	NoContent     bool     `json:"no_content"`
+	Message       string   `json:"message"`
+	ExecutionTime float64  `json:"execution_time"` // Execution time in milliseconds
+	Columns       []string `json:"columns"`
+	Values        [][]any  `json:"values"`
+}
+
+type History struct {
+	ID              string  `json:"id"`
+	Query           string  `json:"query"`
+	Timestamp       int64   `json:"timestamp"`        // Unix timestamp in milliseconds
+	ExecutionTime   float64 `json:"execution_time"`   // Execution time in milliseconds
+	Database        string  `json:"database"`
+	RetentionPolicy string  `json:"retention_policy"`
+	Success         bool    `json:"success"`
+	Error           string  `json:"error"`
+}
+
+func (h *History) Marshal() []byte {
+	data, err := json.Marshal(h)
+	if err != nil {
+		return []byte("{}")
+	}
+	return data
+}

@@ -42,6 +42,7 @@ func main() {
 		OnShutdown:       app.shutdown,
 		Bind: []interface{}{
 			app,
+			&History{},
 			&ConnectConfig{},
 			&DatabaseMetadata{},
 		},

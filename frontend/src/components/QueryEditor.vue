@@ -19,7 +19,7 @@
             <option value="s">s (seconds)</option>
             <option value="m">m (minutes)</option>
             <option value="h">h (hours)</option>
-            <option value="rfc3339">RFC3339</option>
+            <option value="rfc3339">rfc3339</option>
           </select>
         </div>
         <div class="control-group">

@@ -246,6 +246,7 @@ func NewHttpClient(cfg *ConnectConfig) (HttpClient, error) {
 	client.HostPort = schema + "://" + cfg.Address
 
 	client.client.Transport = transport
+	client.SetDebug(true)
 	return client, nil
 }
 
@@ -323,7 +324,7 @@ func (h *HttpClientCreator) innerRequest(ctx context.Context, method, urlPath st
 	if err != nil {
 		return nil, err
 	}
-	request.Header.Set("User-Agent", "opengemini-cli")
+	request.Header.Set("User-Agent", "opengemini-studio")
 	request.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 	if h.basic != "" {
 		request.Header.Set("Authorization", "Basic "+h.basic)

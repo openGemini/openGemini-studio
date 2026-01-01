@@ -71,10 +71,17 @@ export default {
   },
   results: {
     title: '查询结果',
+    executedIn: '执行耗时 {time}毫秒',
+    commandSuccess: '命令执行成功',
+    emptyState: '暂无结果。执行查询后将在此显示结果。',
     executionTime: '执行时间',
     rowCount: '行',
     noResults: '暂无结果',
     error: '错误',
+    status: '状态',
+    message: '消息',
+    failed: '失败',
+    success: '成功',
   },
   history: {
     title: '查询历史',
