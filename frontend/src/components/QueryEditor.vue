@@ -7,42 +7,44 @@
       <div class="header-controls">
         <div class="control-group">
           <label>{{ $t('query.precision') }}:</label>
-          <select 
-            :value="selectedPrecision" 
+          <select
+            :value="selectedPrecision"
             @change="$emit('update:selectedPrecision', ($event.target as HTMLSelectElement).value)"
             class="control-select control-select-small"
             :disabled="disabled"
           >
             <option value="ns">ns (nanoseconds)</option>
+            <option value="u">u (microseconds)</option>
             <option value="ms">ms (milliseconds)</option>
             <option value="s">s (seconds)</option>
+            <option value="m">m (minutes)</option>
+            <option value="h">h (hours)</option>
+            <option value="rfc3339">RFC3339</option>
           </select>
         </div>
         <div class="control-group">
           <label>{{ $t('query.database') }}:</label>
-          <select 
-            :value="selectedDatabase" 
+          <select
+            :value="selectedDatabase"
             @change="$emit('update:selectedDatabase', ($event.target as HTMLSelectElement).value)"
             class="control-select"
             :disabled="disabled"
           >
-            <option value="">{{ $t('query.selectDatabase') }}</option>
             <option v-for="db in databases" :key="db.name" :value="db.name">
               {{ db.name }}
             </option>
           </select>
         </div>
-        <div class="control-group" v-if="selectedDatabase">
+        <div class="control-group" v-if="selectedDatabase && retentionPolicies.length > 0">
           <label>{{ $t('query.retentionPolicy') }}:</label>
-          <select 
-            :value="selectedRetentionPolicy" 
+          <select
+            :value="selectedRetentionPolicy"
             @change="$emit('update:selectedRetentionPolicy', ($event.target as HTMLSelectElement).value)"
             class="control-select"
             :disabled="disabled"
           >
-            <option value="">{{ $t('query.defaultRetentionPolicy') }}</option>
             <option v-for="rp in retentionPolicies" :key="rp.name" :value="rp.name">
-              {{ rp.name }} ({{ rp.duration }})
+              {{ rp.name }}({{ rp.duration }})
             </option>
           </select>
         </div>

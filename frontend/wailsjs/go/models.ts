@@ -68,7 +68,7 @@ export namespace main {
 	}
 	export class DatabaseMetadata {
 	    retention_policies: RetentionPolicy[];
-	    Measurements: string[];
+	    measurements: string[];
 	
 	    static createFrom(source: any = {}) {
 	        return new DatabaseMetadata(source);
@@ -77,7 +77,7 @@ export namespace main {
 	    constructor(source: any = {}) {
 	        if ('string' === typeof source) source = JSON.parse(source);
 	        this.retention_policies = this.convertValues(source["retention_policies"], RetentionPolicy);
-	        this.Measurements = source["Measurements"];
+	        this.measurements = source["measurements"];
 	    }
 	
 		convertValues(a: any, classs: any, asMap: boolean = false): any {

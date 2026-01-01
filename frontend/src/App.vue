@@ -136,10 +136,7 @@ const handleDisconnect = () => {
 const handleConnectToDatabase = (_connection: SavedConnection) => {
   // Connection is already established in ConnectionManager
   // Database list is already populated via DialConnect
-  // Just need to select a default database if none selected
-  if (availableDatabases.value.length > 0 && !selectedDatabase.value) {
-    selectedDatabase.value = availableDatabases.value[0].name
-  }
+  // Database selection is handled by watcher
 }
 
 const handleDisconnectFromDatabase = (connectionId: string) => {
@@ -157,14 +154,14 @@ const handleSelectMeasurement = (data: { measurement: string; database: string; 
 }
 
 const handleUpdateRetentionPolicies = (data: { policies: any[]; database: string }) => {
-  // If this is the currently selected database and no retention policy is selected,
-  // select the default one (usually 'autogen') or the first one
-  if (data.database === selectedDatabase.value && !selectedRetentionPolicy.value) {
-    const defaultPolicy = data.policies.find(p => p.isDefault)
-    if (defaultPolicy) {
-      selectedRetentionPolicy.value = defaultPolicy.name
-    } else if (data.policies.length > 0) {
-      selectedRetentionPolicy.value = data.policies[0].name
+  // If this is the currently selected database, automatically select the first retention policy
+  if (data.database === selectedDatabase.value) {
+    if (data.policies.length > 0) {
+      // Select the default policy if exists, otherwise select the first one
+      const defaultPolicy = data.policies.find(p => p.isDefault)
+      selectedRetentionPolicy.value = defaultPolicy ? defaultPolicy.name : data.policies[0].name
+    } else {
+      selectedRetentionPolicy.value = ''
     }
   }
 }
@@ -249,6 +246,34 @@ const exportResults = () => {
   a.click()
   URL.revokeObjectURL(url)
 }
+
+// Watch availableDatabases and auto-select the first one if none is selected
+watch(availableDatabases, (newDatabases) => {
+  if (newDatabases.length > 0) {
+    // If no database is selected or selected database no longer exists, select the first one
+    if (!selectedDatabase.value || !newDatabases.find(db => db.name === selectedDatabase.value)) {
+      selectedDatabase.value = newDatabases[0].name
+    }
+  } else {
+    selectedDatabase.value = ''
+    selectedRetentionPolicy.value = ''
+  }
+})
+
+// Watch selectedDatabase and auto-select the first retention policy
+watch(selectedDatabase, (newDatabase) => {
+  if (newDatabase) {
+    const db = availableDatabases.value.find(d => d.name === newDatabase)
+    if (db && db.retentionPolicies && db.retentionPolicies.length > 0) {
+      const defaultPolicy = db.retentionPolicies.find(p => p.isDefault)
+      selectedRetentionPolicy.value = defaultPolicy ? defaultPolicy.name : db.retentionPolicies[0].name
+    } else {
+      selectedRetentionPolicy.value = ''
+    }
+  } else {
+    selectedRetentionPolicy.value = ''
+  }
+})
 
 watch(() => appSettings.value.themeMode, (mode) => {
   if (mode === 'system') {

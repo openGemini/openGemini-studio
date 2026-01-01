@@ -62,5 +62,5 @@ type RetentionPolicy struct {
 
 type DatabaseMetadata struct {
 	RetentionPolicy []*RetentionPolicy `json:"retention_policies"`
-	Measurements    []string           `yaml:"measurements"`
+	Measurements    []string           `json:"measurements"`
 }

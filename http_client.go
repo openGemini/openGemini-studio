@@ -70,26 +70,48 @@ func (h *HttpClientCreator) RetentionPolicies(ctx context.Context, database stri
 		return nil, nil
 	}
 	var (
-		seriesValues    = response.Results[0].Series[0].Values
-		column          = response.Results[0].Series[0].Columns
-		retentionPolicy = make([]*RetentionPolicy, 0, len(seriesValues))
+		seriesValues = response.Results[0].Series[0].Values
+		columns      = response.Results[0].Series[0].Columns
 	)
 
-	for idx, v := range seriesValues {
-		columnName := column[idx]
-		var name, duration string
-		if columnName == "name" {
-			name = v[0].(string)
+	// Find column indices
+	nameIdx := -1
+	durationIdx := -1
+	for i, col := range columns {
+		if col == "name" {
+			nameIdx = i
+		} else if col == "duration" {
+			durationIdx = i
 		}
-		if columnName == "duration" {
-			duration = v[0].(string)
+	}
+
+	if nameIdx == -1 || durationIdx == -1 {
+		return nil, fmt.Errorf("missing required columns in retention policy response")
+	}
+
+	retentionPolicies := make([]*RetentionPolicy, 0, len(seriesValues))
+	for _, row := range seriesValues {
+		if len(row) <= nameIdx || len(row) <= durationIdx {
+			continue
 		}
-		retentionPolicy = append(retentionPolicy, &RetentionPolicy{
+
+		name, ok := row[nameIdx].(string)
+		if !ok {
+			continue
+		}
+
+		duration, ok := row[durationIdx].(string)
+		if !ok {
+			continue
+		}
+
+		retentionPolicies = append(retentionPolicies, &RetentionPolicy{
 			Name:     name,
 			Duration: duration,
 		})
 	}
-	return retentionPolicy, nil
+
+	return retentionPolicies, nil
 }
 
 func (h *HttpClientCreator) Measurements(ctx context.Context, database string) ([]string, error) {

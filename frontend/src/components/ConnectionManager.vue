@@ -577,7 +577,7 @@ const loadDatabaseMetadata = async (db: Database, conn: SavedConnection) => {
       const metadata = await GetDatabaseMetadata(conn.id, db.name)
 
       // Convert measurements from string[] to Measurement[] format
-      db.measurements = metadata.Measurements.map(name => ({
+      db.measurements = metadata.measurements.map((name: string) => ({
         name,
         fields: []
       }))
