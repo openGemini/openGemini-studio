@@ -34,6 +34,13 @@ export namespace main {
 	    enable_auth: boolean;
 	    username: string;
 	    password: string;
+	    enable_ssh: boolean;
+	    ssh_host: string;
+	    ssh_port: number;
+	    ssh_username: string;
+	    ssh_password: string;
+	    ssh_key_path: string;
+	    ssh_key_passphrase: string;
 	
 	    static createFrom(source: any = {}) {
 	        return new ConnectConfig(source);
@@ -52,6 +59,13 @@ export namespace main {
 	        this.enable_auth = source["enable_auth"];
 	        this.username = source["username"];
 	        this.password = source["password"];
+	        this.enable_ssh = source["enable_ssh"];
+	        this.ssh_host = source["ssh_host"];
+	        this.ssh_port = source["ssh_port"];
+	        this.ssh_username = source["ssh_username"];
+	        this.ssh_password = source["ssh_password"];
+	        this.ssh_key_path = source["ssh_key_path"];
+	        this.ssh_key_passphrase = source["ssh_key_passphrase"];
 	    }
 	}
 	export class RetentionPolicy {

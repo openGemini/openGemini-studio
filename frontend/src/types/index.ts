@@ -30,6 +30,14 @@ export interface ConnectionConfig {
   clientKey?: string
   insecureTls?: boolean
   insecureHostname?: boolean
+  // SSH Tunnel Configuration
+  enableSSH?: boolean
+  sshHost?: string
+  sshPort?: number
+  sshUsername?: string
+  sshPassword?: string
+  sshKeyPath?: string
+  sshKeyPassphrase?: string
 }
 
 export interface Measurement {

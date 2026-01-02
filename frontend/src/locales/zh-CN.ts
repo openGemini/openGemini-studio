@@ -70,6 +70,13 @@ export default {
     enable: '启用',
     disable: '禁用',
     browse: '浏览',
+    sshTunnel: 'SSH 隧道',
+    sshHost: 'SSH 主机',
+    sshPort: 'SSH 端口',
+    sshUsername: 'SSH 用户名',
+    sshPassword: 'SSH 密码（可选）',
+    sshKeyPath: 'SSH 私钥路径（可选）',
+    sshKeyPassphrase: 'SSH 密钥密码（可选）',
   },
   query: {
     editor: '查询编辑器',

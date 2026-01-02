@@ -73,6 +73,9 @@ func (app *App) startup(ctx context.Context) {
 func (app *App) shutdown(ctx context.Context) {
 	// Close all HTTP client connections first
 	app.connects.Range(func(key, value interface{}) bool {
+		if client, ok := value.(HttpClient); ok {
+			client.Close()
+		}
 		app.connects.Delete(key)
 		return true
 	})
@@ -219,7 +222,14 @@ func (app *App) OpenFileDialog() (string, error) {
 }
 
 func (app *App) DialConnect(name string) ([]string, error) {
+	// Clean up existing connection if any
+	if oldClient, ok := app.connects.Load(name); ok {
+		if client, ok := oldClient.(HttpClient); ok {
+			client.Close()
+		}
+	}
 	app.connects.Delete(name)
+
 	app.logger.Info("dial connect", "name", name)
 	cc, err := app.GetConnect(name)
 	if err != nil {
@@ -236,6 +246,7 @@ func (app *App) DialConnect(name string) ([]string, error) {
 	}
 	err = httpClient.Ping()
 	if err != nil {
+		httpClient.Close()
 		app.logger.Error("dial connect failed: ping http client failed", "reason", err)
 		return nil, err
 	}

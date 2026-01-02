@@ -30,7 +30,15 @@ type ConnectConfig struct {
 	EnableAuth        bool   `json:"enable_auth"`
 	Username          string `json:"username"`
 	Password          string `json:"password"`
-	debug             bool   `json:"-"`
+	// SSH Tunnel Configuration
+	EnableSSH        bool   `json:"enable_ssh"`
+	SSHHost          string `json:"ssh_host"`
+	SSHPort          int    `json:"ssh_port"`
+	SSHUsername      string `json:"ssh_username"`
+	SSHPassword      string `json:"ssh_password"`
+	SSHKeyPath       string `json:"ssh_key_path"`
+	SSHKeyPassphrase string `json:"ssh_key_passphrase"`
+	debug            bool   `json:"-"`
 }
 
 var defaultAppSetting = &AppSetting{

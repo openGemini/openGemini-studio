@@ -244,6 +244,45 @@
               </div>
             </div>
           </div>
+          <div class="form-group">
+            <label>
+              {{ $t('connection.sshTunnel') }}
+              <button type="button" class="auth-toggle" @click="newConnection.enableSSH = !newConnection.enableSSH">
+                {{ newConnection.enableSSH ? $t('connection.disable') : $t('connection.enable') }}
+              </button>
+            </label>
+            <div v-if="newConnection.enableSSH" class="ssh-fields">
+              <div class="form-group">
+                <label>{{ $t('connection.sshHost') }}</label>
+                <input v-model="newConnection.sshHost" type="text" placeholder="ssh.example.com" />
+              </div>
+              <div class="form-group">
+                <label>{{ $t('connection.sshPort') }}</label>
+                <input v-model.number="newConnection.sshPort" type="number" placeholder="22" />
+              </div>
+              <div class="form-group">
+                <label>{{ $t('connection.sshUsername') }}</label>
+                <input v-model="newConnection.sshUsername" type="text" placeholder="user" />
+              </div>
+              <div class="form-group">
+                <label>{{ $t('connection.sshPassword') }}</label>
+                <input v-model="newConnection.sshPassword" type="password" placeholder="••••••••" />
+              </div>
+              <div class="form-group">
+                <label>{{ $t('connection.sshKeyPath') }}</label>
+                <div class="file-input-group">
+                  <input v-model="newConnection.sshKeyPath" type="text" placeholder="/path/to/id_rsa" />
+                  <button type="button" class="btn-browse" @click="selectSSHKeyFile('new')">
+                    {{ $t('connection.browse') }}
+                  </button>
+                </div>
+              </div>
+              <div class="form-group">
+                <label>{{ $t('connection.sshKeyPassphrase') }}</label>
+                <input v-model="newConnection.sshKeyPassphrase" type="password" placeholder="••••••••" />
+              </div>
+            </div>
+          </div>
         </div>
         <div class="modal-footer">
           <button @click="showAddConnection = false" class="btn-cancel">{{ $t('common.cancel') }}</button>
@@ -340,6 +379,45 @@
               </div>
             </div>
           </div>
+          <div class="form-group">
+            <label>
+              {{ $t('connection.sshTunnel') }}
+              <button type="button" class="auth-toggle" @click="editingConnection.enableSSH = !editingConnection.enableSSH">
+                {{ editingConnection.enableSSH ? $t('connection.disable') : $t('connection.enable') }}
+              </button>
+            </label>
+            <div v-if="editingConnection.enableSSH" class="ssh-fields">
+              <div class="form-group">
+                <label>{{ $t('connection.sshHost') }}</label>
+                <input v-model="editingConnection.sshHost" type="text" placeholder="ssh.example.com" />
+              </div>
+              <div class="form-group">
+                <label>{{ $t('connection.sshPort') }}</label>
+                <input v-model.number="editingConnection.sshPort" type="number" placeholder="22" />
+              </div>
+              <div class="form-group">
+                <label>{{ $t('connection.sshUsername') }}</label>
+                <input v-model="editingConnection.sshUsername" type="text" placeholder="user" />
+              </div>
+              <div class="form-group">
+                <label>{{ $t('connection.sshPassword') }}</label>
+                <input v-model="editingConnection.sshPassword" type="password" placeholder="••••••••" />
+              </div>
+              <div class="form-group">
+                <label>{{ $t('connection.sshKeyPath') }}</label>
+                <div class="file-input-group">
+                  <input v-model="editingConnection.sshKeyPath" type="text" placeholder="/path/to/id_rsa" />
+                  <button type="button" class="btn-browse" @click="selectSSHKeyFile('edit')">
+                    {{ $t('connection.browse') }}
+                  </button>
+                </div>
+              </div>
+              <div class="form-group">
+                <label>{{ $t('connection.sshKeyPassphrase') }}</label>
+                <input v-model="editingConnection.sshKeyPassphrase" type="password" placeholder="••••••••" />
+              </div>
+            </div>
+          </div>
         </div>
         <div class="modal-footer">
           <button @click="showEditConnection = false" class="btn-cancel">{{ $t('common.cancel') }}</button>
@@ -428,7 +506,14 @@ const toBackendConfig = (config: ConnectionConfig): main.ConnectConfig => {
     insecure_hostname: config.insecureHostname || false,
     enable_auth: config.enableAuth || false,
     username: config.username || '',
-    password: config.password || ''
+    password: config.password || '',
+    enable_ssh: config.enableSSH || false,
+    ssh_host: config.sshHost || '',
+    ssh_port: config.sshPort || 22,
+    ssh_username: config.sshUsername || '',
+    ssh_password: config.sshPassword || '',
+    ssh_key_path: config.sshKeyPath || '',
+    ssh_key_passphrase: config.sshKeyPassphrase || ''
   }
 }
 
@@ -446,6 +531,13 @@ const fromBackendConfig = (config: main.ConnectConfig): SavedConnection => {
     enableAuth: config.enable_auth,
     username: config.username,
     password: config.password,
+    enableSSH: config.enable_ssh,
+    sshHost: config.ssh_host,
+    sshPort: config.ssh_port,
+    sshUsername: config.ssh_username,
+    sshPassword: config.ssh_password,
+    sshKeyPath: config.ssh_key_path,
+    sshKeyPassphrase: config.ssh_key_passphrase,
     database: '',
     databases: [],
     expanded: false,
@@ -483,6 +575,13 @@ const editingConnection = ref<SavedConnection>({
   clientKey: '',
   insecureTls: false,
   insecureHostname: false,
+  enableSSH: false,
+  sshHost: '',
+  sshPort: 22,
+  sshUsername: '',
+  sshPassword: '',
+  sshKeyPath: '',
+  sshKeyPassphrase: '',
   expanded: false,
   connected: false,
   databases: []
@@ -513,7 +612,14 @@ const newConnection = ref<ConnectionConfig>({
   clientCert: '',
   clientKey: '',
   insecureTls: false,
-  insecureHostname: false
+  insecureHostname: false,
+  enableSSH: false,
+  sshHost: '',
+  sshPort: 22,
+  sshUsername: '',
+  sshPassword: '',
+  sshKeyPath: '',
+  sshKeyPassphrase: ''
 })
 
 // Error dialog state
@@ -644,7 +750,14 @@ const addConnection = async () => {
       clientCert: '',
       clientKey: '',
       insecureTls: false,
-      insecureHostname: false
+      insecureHostname: false,
+      enableSSH: false,
+      sshHost: '',
+      sshPort: 22,
+      sshUsername: '',
+      sshPassword: '',
+      sshKeyPath: '',
+      sshKeyPassphrase: ''
     }
     showAddConnection.value = false
   } catch (error) {
@@ -760,6 +873,13 @@ const editConnection = (conn: SavedConnection) => {
   if (!converted.clientKey) converted.clientKey = ''
   if (converted.insecureTls === undefined) converted.insecureTls = false
   if (converted.insecureHostname === undefined) converted.insecureHostname = false
+  if (converted.enableSSH === undefined) converted.enableSSH = false
+  if (!converted.sshHost) converted.sshHost = ''
+  if (!converted.sshPort) converted.sshPort = 22
+  if (!converted.sshUsername) converted.sshUsername = ''
+  if (!converted.sshPassword) converted.sshPassword = ''
+  if (!converted.sshKeyPath) converted.sshKeyPath = ''
+  if (!converted.sshKeyPassphrase) converted.sshKeyPassphrase = ''
 
   editingConnection.value = converted
   showEditConnection.value = true
@@ -842,6 +962,21 @@ const selectClientKeyFile = async (type: 'new' | 'edit') => {
     }
   } catch (error) {
     console.error('Failed to select client key file:', error)
+  }
+}
+
+const selectSSHKeyFile = async (type: 'new' | 'edit') => {
+  try {
+    const filePath = await OpenFileDialog()
+    if (filePath) {
+      if (type === 'new') {
+        newConnection.value.sshKeyPath = filePath
+      } else {
+        editingConnection.value.sshKeyPath = filePath
+      }
+    }
+  } catch (error) {
+    console.error('Failed to select SSH key file:', error)
   }
 }
 
@@ -1356,6 +1491,14 @@ const startResize = (e: MouseEvent) => {
 }
 
 .auth-fields {
+  margin-top: 12px;
+  padding: 12px;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  background: var(--bg-hover);
+}
+
+.ssh-fields {
   margin-top: 12px;
   padding: 12px;
   border: 1px solid var(--border-color);

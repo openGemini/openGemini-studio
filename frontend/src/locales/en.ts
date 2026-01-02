@@ -70,6 +70,13 @@ export default {
     enable: 'Enable',
     disable: 'Disable',
     browse: 'Browse',
+    sshTunnel: 'SSH Tunnel',
+    sshHost: 'SSH Host',
+    sshPort: 'SSH Port',
+    sshUsername: 'SSH Username',
+    sshPassword: 'SSH Password (optional)',
+    sshKeyPath: 'SSH Private Key Path (optional)',
+    sshKeyPassphrase: 'SSH Key Passphrase (optional)',
   },
   query: {
     editor: 'Query Editor',

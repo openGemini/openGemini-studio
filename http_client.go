@@ -44,13 +44,15 @@ type HttpClient interface {
 	Databases(ctx context.Context) ([]string, error)
 	RetentionPolicies(ctx context.Context, database string) ([]*RetentionPolicy, error)
 	Measurements(ctx context.Context, database string) ([]string, error)
+	Close() error
 }
 
 type HttpClientCreator struct {
-	HostPort string
-	client   *http.Client
-	basic    string
-	debug    bool
+	HostPort  string
+	client    *http.Client
+	basic     string
+	debug     bool
+	sshTunnel *SSHTunnel
 }
 
 func (h *HttpClientCreator) RetentionPolicies(ctx context.Context, database string) ([]*RetentionPolicy, error) {
@@ -190,10 +192,32 @@ func NewHttpClient(cfg *ConnectConfig) (HttpClient, error) {
 	}
 
 	var schema = strings.ToLower(cfg.HTTPSchema)
+	var targetAddress = cfg.Address
+
+	// Setup SSH tunnel if enabled
+	if cfg.EnableSSH {
+		tunnel, err := NewSSHTunnel(cfg)
+		if err != nil {
+			return nil, fmt.Errorf("failed to create SSH tunnel: %w", err)
+		}
+
+		// Start the tunnel
+		if err := tunnel.Start(); err != nil {
+			return nil, fmt.Errorf("failed to start SSH tunnel: %w", err)
+		}
+
+		client.sshTunnel = tunnel
+		// Use the local tunnel address instead of the remote address
+		targetAddress = tunnel.LocalAddr()
+	}
 
 	if schema == "https" {
 		certificateManager, err := NewCertificateManager(cfg.CACertificate, cfg.ClientCertificate, cfg.ClientKey)
 		if err != nil {
+			// Clean up SSH tunnel if it was created
+			if client.sshTunnel != nil {
+				client.sshTunnel.Stop()
+			}
 			return nil, errors.New("cannot load certificate: " + err.Error())
 		}
 		transport.TLSClientConfig = &tls.Config{
@@ -243,7 +267,7 @@ func NewHttpClient(cfg *ConnectConfig) (HttpClient, error) {
 		client.SetAuth(cfg.Username, cfg.Password)
 	}
 
-	client.HostPort = schema + "://" + cfg.Address
+	client.HostPort = schema + "://" + targetAddress
 
 	client.client.Transport = transport
 	client.SetDebug(cfg.debug)
@@ -343,6 +367,14 @@ func (h *HttpClientCreator) innerRequest(ctx context.Context, method, urlPath st
 	}
 
 	return response, err
+}
+
+// Close closes the HTTP client and SSH tunnel if present
+func (h *HttpClientCreator) Close() error {
+	if h.sshTunnel != nil {
+		return h.sshTunnel.Stop()
+	}
+	return nil
 }
 
 type CertificateManager struct {

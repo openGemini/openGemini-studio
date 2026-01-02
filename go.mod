@@ -1,12 +1,15 @@
 module openGemini-studio
 
-go 1.24
+go 1.24.0
+
+toolchain go1.24.3
 
 require (
 	github.com/openGemini/opengemini-client-go v0.9.1
 	github.com/samber/slog-multi v1.6.0
 	github.com/wailsapp/wails/v2 v2.11.0
 	go.etcd.io/bbolt v1.4.3
+	golang.org/x/crypto v0.46.0
 )
 
 require (
@@ -50,10 +53,9 @@ require (
 	github.com/vmihailenco/tagparser/v2 v2.0.0 // indirect
 	github.com/wailsapp/go-webview2 v1.0.22 // indirect
 	github.com/wailsapp/mimetype v1.4.1 // indirect
-	golang.org/x/crypto v0.33.0 // indirect
-	golang.org/x/net v0.35.0 // indirect
-	golang.org/x/sys v0.30.0 // indirect
-	golang.org/x/text v0.22.0 // indirect
+	golang.org/x/net v0.47.0 // indirect
+	golang.org/x/sys v0.39.0 // indirect
+	golang.org/x/text v0.32.0 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20240528184218-531527333157 // indirect
 	google.golang.org/grpc v1.65.1 // indirect
 	google.golang.org/protobuf v1.35.2 // indirect
