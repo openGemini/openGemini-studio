@@ -69,7 +69,7 @@ A modern, cross-platform desktop client for [openGemini](https://github.com/open
 - No prerequisites needed - download and run the pre-built binary for your platform
 
 **For Developers:**
-- Go 1.19 or higher
+- Go 1.24 or higher
 - Node.js 16 or higher
 - npm or yarn
 - Wails CLI v2
