@@ -254,7 +254,7 @@ func (app *App) DialConnect(name string) ([]string, error) {
 
 	databases, err := httpClient.Databases(app.ctx)
 	if err != nil {
-		app.logger.Error("dial connect failed: databases failed", "reason", err)
+		app.logger.Error("dial connect failed: get databases failed", "reason", err)
 		return nil, err
 	}
 	return databases, nil
@@ -290,6 +290,12 @@ func (app *App) GetDatabaseMetadata(connectName, databaseName string) (*Database
 
 func (app *App) CloseConnect(connectName string) {
 	app.logger.Info("close connect", "name", connectName)
+	// Clean up existing connection if any
+	if oldClient, ok := app.connects.Load(connectName); ok {
+		if client, ok := oldClient.(HttpClient); ok {
+			client.Close()
+		}
+	}
 	app.connects.Delete(connectName)
 }
 
@@ -306,7 +312,7 @@ func (app *App) ExecuteCommand(data *ExecuteRequest) (*ExecuteResponse, error) {
 		return nil, err
 	}
 
-	app.logger.Info("execute command data", "data", data)
+	app.logger.Debug("request execute command", "data", data.String())
 
 	var startTime = time.Now()
 

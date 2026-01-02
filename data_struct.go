@@ -85,6 +85,14 @@ type ExecuteRequest struct {
 	Command         string `json:"command"`
 }
 
+func (e *ExecuteRequest) String() string {
+	data, err := json.Marshal(e)
+	if err != nil {
+		return "{}"
+	}
+	return string(data)
+}
+
 type ExecuteResponse struct {
 	NoContent     bool     `json:"no_content"`
 	Message       string   `json:"message"`

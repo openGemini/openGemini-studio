@@ -57,6 +57,10 @@ func (log *Logger) Close() {
 	_ = log.fileHandler.Close()
 }
 
+func (log *Logger) Debug(msg string, args ...interface{}) {
+	slog.Debug(msg, args...)
+}
+
 func (log *Logger) Info(msg string, args ...interface{}) {
 	slog.Info(msg, args...)
 }
