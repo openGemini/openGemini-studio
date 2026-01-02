@@ -99,6 +99,8 @@ export default {
     customFontHint: '输入自定义字体名称（用逗号分隔）。留空则使用默认字体。',
     maxHistoryCount: '最大历史记录数',
     dataDirectory: '数据目录',
+    debug: '开启调试模式',
+    debugHint: '启用调试模式以查看详细的日志和诊断信息',
     resetToDefaults: '重置为默认值',
     save: '保存',
     themeLight: '浅色',

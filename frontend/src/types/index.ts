@@ -74,4 +74,5 @@ export interface AppSettings {
   customFont: string
   maxHistoryCount: number
   dataDirectory: string
+  debug: boolean
 }

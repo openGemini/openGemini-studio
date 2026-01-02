@@ -62,6 +62,18 @@
           />
           <span class="setting-hint">{{ $t('settings.dataDirectoryHint') }}</span>
         </div>
+
+        <div class="setting-group">
+          <label class="setting-label setting-checkbox-label">
+            <input
+              v-model="localSettings.debug"
+              type="checkbox"
+              class="setting-checkbox"
+            />
+            <span>{{ $t('settings.debug') }}</span>
+          </label>
+          <span class="setting-hint">{{ $t('settings.debugHint') }}</span>
+        </div>
       </div>
 
       <div class="settings-footer">
@@ -260,5 +272,20 @@ const handleReset = () => {
 
 .btn-secondary:hover {
   background: var(--bg-hover);
+}
+
+.setting-checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.setting-checkbox {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+  accent-color: #3b82f6;
 }
 </style>

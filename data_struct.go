@@ -30,6 +30,7 @@ type ConnectConfig struct {
 	EnableAuth        bool   `json:"enable_auth"`
 	Username          string `json:"username"`
 	Password          string `json:"password"`
+	debug             bool   `json:"-"`
 }
 
 var defaultAppSetting = &AppSetting{
@@ -37,6 +38,7 @@ var defaultAppSetting = &AppSetting{
 	ThemeMode:       "light",
 	MaxHistoryCount: 100,
 	DataDirectory:   "./data",
+	Debug:           false,
 }
 
 type AppSetting struct {
@@ -45,6 +47,7 @@ type AppSetting struct {
 	CustomFont      string `json:"custom_font"`
 	MaxHistoryCount int    `json:"max_history_count"`
 	DataDirectory   string `json:"data_dir"`
+	Debug           bool   `json:"debug"`
 }
 
 func (as *AppSetting) Marshal() []byte {
@@ -85,8 +88,8 @@ type ExecuteResponse struct {
 type History struct {
 	ID              string  `json:"id"`
 	Query           string  `json:"query"`
-	Timestamp       int64   `json:"timestamp"`        // Unix timestamp in milliseconds
-	ExecutionTime   float64 `json:"execution_time"`   // Execution time in milliseconds
+	Timestamp       int64   `json:"timestamp"`      // Unix timestamp in milliseconds
+	ExecutionTime   float64 `json:"execution_time"` // Execution time in milliseconds
 	Database        string  `json:"database"`
 	RetentionPolicy string  `json:"retention_policy"`
 	Success         bool    `json:"success"`

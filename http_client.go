@@ -246,7 +246,7 @@ func NewHttpClient(cfg *ConnectConfig) (HttpClient, error) {
 	client.HostPort = schema + "://" + cfg.Address
 
 	client.client.Transport = transport
-	client.SetDebug(true)
+	client.SetDebug(cfg.debug)
 	return client, nil
 }
 

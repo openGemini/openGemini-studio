@@ -6,6 +6,7 @@ export namespace main {
 	    custom_font: string;
 	    max_history_count: number;
 	    data_dir: string;
+	    debug: boolean;
 	
 	    static createFrom(source: any = {}) {
 	        return new AppSetting(source);
@@ -18,6 +19,7 @@ export namespace main {
 	        this.custom_font = source["custom_font"];
 	        this.max_history_count = source["max_history_count"];
 	        this.data_dir = source["data_dir"];
+	        this.debug = source["debug"];
 	    }
 	}
 	export class ConnectConfig {

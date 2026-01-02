@@ -9,6 +9,7 @@ const DEFAULT_SETTINGS: AppSettings = {
   customFont: "",
   maxHistoryCount: 50,
   dataDirectory: "./data",
+  debug: false,
 }
 
 // Data transformation utilities
@@ -19,6 +20,7 @@ const toBackendSettings = (settings: AppSettings): main.AppSetting => {
     custom_font: settings.customFont,
     max_history_count: settings.maxHistoryCount,
     data_dir: settings.dataDirectory,
+    debug: settings.debug,
   }
 }
 
@@ -29,6 +31,7 @@ const fromBackendSettings = (backendSettings: main.AppSetting): AppSettings => {
     customFont: backendSettings.custom_font || "",
     maxHistoryCount: backendSettings.max_history_count,
     dataDirectory: backendSettings.data_dir,
+    debug: backendSettings.debug || false,
   }
 }
 

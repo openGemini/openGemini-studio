@@ -35,6 +35,7 @@ type App struct {
 	db       *bolt.DB
 	connects sync.Map
 	logger   *Logger
+	debug    bool
 }
 
 // NewApp creates a new App application struct
@@ -61,6 +62,12 @@ func NewApp() *App {
 // so we can call the runtime methods
 func (app *App) startup(ctx context.Context) {
 	app.ctx = ctx
+	setting, err := app.GetSetting()
+	if err != nil {
+		app.logger.Error("get setting failed", "reason", err)
+	} else {
+		app.debug = setting.Debug
+	}
 }
 
 func (app *App) shutdown(ctx context.Context) {
@@ -177,6 +184,7 @@ func (app *App) GetConnect(name string) (*ConnectConfig, error) {
 }
 
 func (app *App) UpdateSetting(settings *AppSetting) error {
+	app.debug = settings.Debug
 	data, err := json.Marshal(settings)
 	if err != nil {
 		app.logger.Error("update settings failed", "reason", err)
@@ -217,6 +225,9 @@ func (app *App) DialConnect(name string) ([]string, error) {
 	if err != nil {
 		app.logger.Error("dial connect failed: find connect config failed", "reason", err)
 		return nil, err
+	}
+	if app.debug {
+		cc.debug = true
 	}
 	httpClient, err := NewHttpClient(cc)
 	if err != nil {

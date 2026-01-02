@@ -99,6 +99,8 @@ export default {
     customFontHint: 'Enter custom font family names (comma-separated). Leave empty to use default fonts.',
     maxHistoryCount: 'Max History Count',
     dataDirectory: 'Data Directory',
+    debug: 'Enable Debug Mode',
+    debugHint: 'Enable debug mode to see detailed logs and diagnostic information',
     resetToDefaults: 'Reset to Defaults',
     save: 'Save',
     themeLight: 'Light',
