@@ -144,6 +144,14 @@ jobs:
             echo "is_nightly=true" >> $GITHUB_OUTPUT
           fi
 
+      - name: Delete existing nightly release
+        if: steps.release_info.outputs.is_nightly == 'true'
+        run: |
+          # Delete the release if it exists
+          gh release delete nightly --yes --cleanup-tag || true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Generate release body
         id: release_body
         run: |
