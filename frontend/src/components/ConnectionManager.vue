@@ -909,13 +909,29 @@ const saveEditConnection = async () => {
   }
 }
 
-const refreshConnection = (conn: SavedConnection) => {
+const refreshConnection = async (conn: SavedConnection) => {
   if (conn.connected) {
-    // Simulate refresh by disconnecting and reconnecting
-    emit('disconnect', conn.id)
-    setTimeout(() => {
-      emit('connect', conn)
-    }, 100)
+    try {
+      // Call DialConnect to re-establish connection and get updated database list
+      const databaseNames = await DialConnect(conn.id)
+
+      // Convert database names to Database objects
+      const databases: Database[] = databaseNames.map(name => ({
+        name,
+        expanded: false,
+        measurements: [],
+        retentionPolicies: []
+      }))
+
+      // Update connection's database list without triggering disconnect/connect events
+      conn.databases = databases
+      conn.connected = true
+      conn.expanded = true
+    } catch (error) {
+      // Show error dialog if refresh failed
+      const errorMessage = error instanceof Error ? error.message : String(error)
+      showError(error, `Failed to refresh connection: ${errorMessage}`)
+    }
   }
 }
 
