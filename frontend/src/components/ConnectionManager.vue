@@ -67,7 +67,7 @@
 
         <div v-if="conn.expanded && conn.connected" class="connection-content">
           <div v-for="db in conn.databases" :key="db.name" class="database-item">
-            <div class="database-header" @dblclick="loadDatabaseMetadata(db, conn)">
+            <div class="database-header" @dblclick.prevent="loadDatabaseMetadata(db, conn)">
               <!-- Replace database expand/collapse with SVG chevron -->
               <svg v-if="!db.expanded" class="icon-chevron indent" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path d="M9 18l6-6-6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
@@ -1083,6 +1083,10 @@ const startResize = (e: MouseEvent) => {
   padding: 8px;
   cursor: pointer;
   transition: background 0.2s;
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
 }
 
 .connection-header:hover {
@@ -1155,6 +1159,10 @@ const startResize = (e: MouseEvent) => {
   cursor: pointer;
   border-radius: 4px;
   transition: background 0.2s;
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
 }
 
 .database-header:hover {
@@ -1178,6 +1186,10 @@ const startResize = (e: MouseEvent) => {
   cursor: pointer;
   border-radius: 4px;
   transition: background 0.2s;
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
 }
 
 .measurement-item:hover {
