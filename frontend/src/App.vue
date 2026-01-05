@@ -1,6 +1,6 @@
 <template>
   <div class="app-container">
-    <Toolbar 
+    <Toolbar
       :is-connected="hasActiveConnection"
       :is-dark="theme === 'dark'"
       @connect="handleConnect"
@@ -11,6 +11,7 @@
       @toggle-sidebar="sidebarCollapsed = !sidebarCollapsed"
       @toggle-history="historyVisible = !historyVisible"
       @toggle-settings="settingsVisible = true"
+      @toggle-about="aboutVisible = true"
     />
     
     <div class="main-content">
@@ -65,6 +66,12 @@
       @save="handleSaveSettings"
       @reset="handleResetSettings"
     />
+
+    <!-- 添加关于弹窗 -->
+    <About
+      :visible="aboutVisible"
+      @close="aboutVisible = false"
+    />
   </div>
 </template>
 
@@ -77,6 +84,7 @@ import QueryEditor from './components/QueryEditor.vue'
 import ResultsTable from './components/ResultsTable.vue'
 import QueryHistory from './components/QueryHistory.vue'
 import Settings from './components/Settings.vue'
+import About from './components/About.vue'
 import { useTheme } from './composables/useTheme'
 import { useSettings } from './composables/useSettings'
 import type { SavedConnection, QueryHistoryItem, Database, AppSettings } from './types'
@@ -92,6 +100,7 @@ const toggleTheme = themeComposable.toggleTheme
 
 const appSettings = settingsComposable.settings
 const settingsVisible = ref(false)
+const aboutVisible = ref(false)
 
 const query = ref('SELECT * FROM measurement_name LIMIT 100')
 const resultColumns = ref<string[]>([])

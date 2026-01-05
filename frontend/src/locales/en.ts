@@ -36,6 +36,7 @@ export default {
     export: 'Export CSV',
     history: 'Query History',
     settings: 'Settings',
+    about: 'About',
     toggleTheme: 'Toggle Theme',
     toggleSidebar: 'Toggle Sidebar',
   },
@@ -140,5 +141,12 @@ export default {
     deleteConnectionFailed: 'Failed to delete connection',
     loadSettingsFailed: 'Failed to load settings',
     saveSettingsFailed: 'Failed to save settings',
+  },
+  about: {
+    title: 'About openGemini Studio',
+    description: 'A modern, cross-platform desktop client for openGemini time-series database. Built with Wails, Vue 3, and TypeScript to provide a native desktop experience for database management, query execution, and data visualization.',
+    links: 'Links',
+    repository: 'openGemini Studio Repository',
+    mainRepository: 'openGemini Repository',
   },
 }

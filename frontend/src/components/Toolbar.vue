@@ -42,6 +42,13 @@
           <path d="M12 1v6m0 6v6M5.64 5.64l4.24 4.24m4.24 4.24l4.24 4.24M1 12h6m6 0h6M5.64 18.36l4.24-4.24m4.24-4.24l4.24-4.24"/>
         </svg>
       </button>
+      <button @click="$emit('toggleAbout')" class="btn btn-icon" :title="$t('toolbar.about')">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"/>
+          <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>
+          <line x1="12" y1="17" x2="12.01" y2="17"/>
+        </svg>
+      </button>
 
       <template v-if="isConnected">
         <button @click="$emit('executeQuery')" class="btn btn-success">
@@ -73,6 +80,7 @@ defineEmits<{
   toggleSidebar: []
   toggleHistory: []
   toggleSettings: []
+  toggleAbout: []
 }>()
 </script>
 

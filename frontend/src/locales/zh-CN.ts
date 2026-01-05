@@ -36,6 +36,7 @@ export default {
     export: '导出CSV',
     history: '查询历史',
     settings: '设置',
+    about: '关于',
     toggleTheme: '切换主题',
     toggleSidebar: '切换侧边栏',
   },
@@ -140,5 +141,12 @@ export default {
     deleteConnectionFailed: '删除连接失败',
     loadSettingsFailed: '加载设置失败',
     saveSettingsFailed: '保存设置失败',
+  },
+  about: {
+    title: '关于 openGemini Studio',
+    description: '一个现代化的跨平台 openGemini 时序数据库桌面客户端。使用 Wails、Vue 3 和 TypeScript 构建，提供原生桌面体验，支持数据库管理、查询执行和数据可视化。',
+    links: '链接',
+    repository: 'openGemini Studio 仓库',
+    mainRepository: 'openGemini 仓库',
   },
 }
