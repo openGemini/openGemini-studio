@@ -683,13 +683,15 @@ const loadDatabaseMetadata = async (db: Database, conn: SavedConnection) => {
       const metadata = await GetDatabaseMetadata(conn.id, db.name)
 
       // Convert measurements from string[] to Measurement[] format
-      db.measurements = metadata.measurements.map((name: string) => ({
+      // Handle null or undefined measurements (empty database is normal)
+      db.measurements = (metadata.measurements || []).map((name: string) => ({
         name,
         fields: []
       }))
 
       // Convert retention policies from backend format to frontend format
-      db.retentionPolicies = metadata.retention_policies.map(policy => ({
+      // Handle null or undefined retention policies
+      db.retentionPolicies = (metadata.retention_policies || []).map(policy => ({
         name: policy.name,
         duration: policy.duration,
         replication: 1,  // Default value
