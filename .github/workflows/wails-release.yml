@@ -152,6 +152,21 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Get existing release body (for tag releases)
+        if: steps.release_info.outputs.is_nightly == 'false'
+        id: existing_release
+        run: |
+          # Try to get existing release body
+          EXISTING_BODY=$(gh release view ${{ steps.release_info.outputs.tag_name }} --json body -q .body 2>/dev/null || echo "")
+          if [ -n "$EXISTING_BODY" ]; then
+            echo "has_existing=true" >> $GITHUB_OUTPUT
+            echo "$EXISTING_BODY" > existing_body.md
+          else
+            echo "has_existing=false" >> $GITHUB_OUTPUT
+          fi
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Generate release body
         id: release_body
         run: |
@@ -193,15 +208,24 @@ jobs:
           ⚠️ **Note**: This is a nightly build and may contain unstable features or bugs.
           EOF
           else
-            cat << 'EOF' > release_body.md
-          🚀 **Release Build**
+            # For tag releases, append build info to existing body
+            if [[ "${{ steps.existing_release.outputs.has_existing }}" == "true" ]]; then
+              # Append to existing body
+              cat existing_body.md > release_body.md
+              echo "" >> release_body.md
+              echo "---" >> release_body.md
+              echo "" >> release_body.md
+            fi
 
-          **Release Information:**
-          - Version: ${{ steps.release_info.outputs.tag_name }}
-          - Build Date: ${{ github.event.head_commit.timestamp }}
+            # Add build information
+            cat << 'EOF' >> release_body.md
+          ## 📦 Downloads (Build ${{ github.sha }})
+
+          **Build Information:**
           - Commit: ${{ github.sha }}
+          - Build Date: ${{ github.event.head_commit.timestamp }}
 
-          ## 📦 Downloads
+          ### Available Downloads
           - **Linux**: openGemini-studio-linux-amd64.tar.gz
           - **Windows**: openGemini-studio-windows-amd64.zip
           - **macOS**: openGemini-studio-darwin-universal.tar.gz
@@ -223,9 +247,6 @@ jobs:
           tar -xzf openGemini-studio-darwin-universal.tar.gz
           open openGemini-studio.app
           ```
-
-          ## 📝 Changelog
-          Please see the commit history for detailed changes.
           EOF
           fi
 
