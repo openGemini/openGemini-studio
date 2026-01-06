@@ -19,10 +19,8 @@
         <div class="about-section">
           <h3>{{ $t('about.links') }}</h3>
           <div class="links-container">
-            <a
-              href="https://github.com/openGemini/openGemini-studio"
-              target="_blank"
-              rel="noopener noreferrer"
+            <button
+              @click="openURL('https://github.com/openGemini/openGemini-studio')"
               class="link-item"
             >
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -34,12 +32,10 @@
                 <polyline points="15 3 21 3 21 9"/>
                 <line x1="10" y1="14" x2="21" y2="3"/>
               </svg>
-            </a>
+            </button>
 
-            <a
-              href="https://github.com/openGemini/openGemini"
-              target="_blank"
-              rel="noopener noreferrer"
+            <button
+              @click="openURL('https://github.com/openGemini/openGemini')"
               class="link-item"
             >
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -51,7 +47,7 @@
                 <polyline points="15 3 21 3 21 9"/>
                 <line x1="10" y1="14" x2="21" y2="3"/>
               </svg>
-            </a>
+            </button>
           </div>
         </div>
       </div>
@@ -64,6 +60,8 @@
 </template>
 
 <script setup lang="ts">
+import { BrowserOpenURL } from '../../wailsjs/runtime/runtime'
+
 defineProps<{
   visible: boolean
 }>()
@@ -71,6 +69,10 @@ defineProps<{
 defineEmits<{
   close: []
 }>()
+
+const openURL = (url: string) => {
+  BrowserOpenURL(url)
+}
 </script>
 
 <style scoped>
@@ -176,6 +178,10 @@ defineEmits<{
   color: var(--text-primary);
   text-decoration: none;
   transition: all 0.2s;
+  cursor: pointer;
+  width: 100%;
+  font-size: 14px;
+  text-align: left;
 }
 
 .link-item:hover {
