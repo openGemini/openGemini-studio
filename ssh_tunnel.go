@@ -37,19 +37,23 @@ type SSHTunnel struct {
 	stopChan   chan struct{}
 	started    bool
 	mu         sync.Mutex
+	logger     *Logger
 }
 
 // NewSSHTunnel creates a new SSH tunnel
-func NewSSHTunnel(cfg *ConnectConfig) (*SSHTunnel, error) {
+func NewSSHTunnel(cfg *ConnectConfig, logger *Logger) (*SSHTunnel, error) {
 	if !cfg.EnableSSH {
+		logger.Error("SSH is not enabled")
 		return nil, errors.New("SSH is not enabled")
 	}
 
 	if cfg.SSHHost == "" || cfg.SSHPort == 0 {
+		logger.Error("SSH host and port are required")
 		return nil, errors.New("SSH host and port are required")
 	}
 
 	if cfg.SSHUsername == "" {
+		logger.Error("SSH username is required")
 		return nil, errors.New("SSH username is required")
 	}
 
@@ -65,6 +69,7 @@ func NewSSHTunnel(cfg *ConnectConfig) (*SSHTunnel, error) {
 		// Use private key authentication
 		key, err := os.ReadFile(cfg.SSHKeyPath)
 		if err != nil {
+			logger.Error("read SSH key failed", "reason", err)
 			return nil, fmt.Errorf("failed to read SSH private key: %w", err)
 		}
 
@@ -75,6 +80,7 @@ func NewSSHTunnel(cfg *ConnectConfig) (*SSHTunnel, error) {
 			signer, err = ssh.ParsePrivateKey(key)
 		}
 		if err != nil {
+			logger.Error("parse SSH key failed", "reason", err)
 			return nil, fmt.Errorf("failed to parse SSH private key: %w", err)
 		}
 
@@ -87,6 +93,7 @@ func NewSSHTunnel(cfg *ConnectConfig) (*SSHTunnel, error) {
 			ssh.Password(cfg.SSHPassword),
 		}
 	} else {
+		logger.Error("SSH authentication method not configured (password or key required)")
 		return nil, errors.New("SSH authentication method not configured (password or key required)")
 	}
 
@@ -95,6 +102,7 @@ func NewSSHTunnel(cfg *ConnectConfig) (*SSHTunnel, error) {
 		remoteAddr: cfg.Address,
 		config:     sshConfig,
 		stopChan:   make(chan struct{}),
+		logger:     logger,
 	}
 
 	return tunnel, nil
@@ -106,12 +114,14 @@ func (t *SSHTunnel) Start() error {
 	defer t.mu.Unlock()
 
 	if t.started {
+		t.logger.Warn("SSH tunnel already started")
 		return errors.New("tunnel already started")
 	}
 
 	// Connect to SSH server
 	sshClient, err := ssh.Dial("tcp", t.sshAddr, t.config)
 	if err != nil {
+		t.logger.Error("failed to connect to SSH server", "reason", err)
 		return fmt.Errorf("failed to connect to SSH server: %w", err)
 	}
 	t.sshClient = sshClient
@@ -119,7 +129,8 @@ func (t *SSHTunnel) Start() error {
 	// Create local listener on random available port
 	listener, err := net.Listen("tcp", "127.0.0.1:0")
 	if err != nil {
-		sshClient.Close()
+		t.logger.Error("failed to listen local ssh port", "reason", err)
+		_ = sshClient.Close()
 		return fmt.Errorf("failed to create local listener: %w", err)
 	}
 	t.listener = listener
@@ -141,6 +152,7 @@ func (t *SSHTunnel) acceptConnections() {
 	for {
 		select {
 		case <-t.stopChan:
+			t.logger.Debug("SSH tunnel stopped")
 			return
 		default:
 		}
@@ -149,6 +161,7 @@ func (t *SSHTunnel) acceptConnections() {
 		if err != nil {
 			select {
 			case <-t.stopChan:
+				t.logger.Debug("SSH tunnel stopped")
 				return
 			default:
 				continue
@@ -168,6 +181,7 @@ func (t *SSHTunnel) handleConnection(localConn net.Conn) {
 	// Connect to remote server through SSH tunnel
 	remoteConn, err := t.sshClient.Dial("tcp", t.remoteAddr)
 	if err != nil {
+		t.logger.Error("failed to connect to remote ssh server", "reason", err)
 		return
 	}
 	defer remoteConn.Close()
@@ -177,13 +191,13 @@ func (t *SSHTunnel) handleConnection(localConn net.Conn) {
 
 	// Copy from local to remote
 	go func() {
-		io.Copy(remoteConn, localConn)
+		_, _ = io.Copy(remoteConn, localConn)
 		done <- struct{}{}
 	}()
 
 	// Copy from remote to local
 	go func() {
-		io.Copy(localConn, remoteConn)
+		_, _ = io.Copy(localConn, remoteConn)
 		done <- struct{}{}
 	}()
 
@@ -205,7 +219,7 @@ func (t *SSHTunnel) Stop() error {
 
 	// Close the listener
 	if t.listener != nil {
-		t.listener.Close()
+		_ = t.listener.Close()
 	}
 
 	// Wait for all connections to finish
@@ -213,7 +227,7 @@ func (t *SSHTunnel) Stop() error {
 
 	// Close SSH client
 	if t.sshClient != nil {
-		t.sshClient.Close()
+		_ = t.sshClient.Close()
 	}
 
 	t.started = false
