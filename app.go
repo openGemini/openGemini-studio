@@ -116,8 +116,21 @@ func (app *App) ListConnects() []*ConnectConfig {
 	return connects
 }
 
+var (
+	ConnectNotExistError = errors.New("connect does not exist")
+)
+
 func (app *App) AddConnect(cc *ConnectConfig) error {
-	err := app.db.Update(func(tx *bolt.Tx) error {
+	existConnect, err := app.GetConnect(cc.Name)
+	if err == nil && existConnect != nil {
+		app.logger.Error("connect already exists", "name", cc.Name)
+		return errors.New("connect already exists")
+	}
+	if err != nil && !errors.Is(err, ConnectNotExistError) {
+		app.logger.Error("get connect failed", "name", cc.Name)
+		return err
+	}
+	err = app.db.Update(func(tx *bolt.Tx) error {
 		bucket := tx.Bucket([]byte(BucketConnections))
 		existConnect := bucket.Get([]byte(cc.Name))
 		if existConnect != nil {
@@ -139,7 +152,12 @@ func (app *App) AddConnect(cc *ConnectConfig) error {
 }
 
 func (app *App) UpdateConnect(name string, cc *ConnectConfig) error {
-	err := app.db.Update(func(tx *bolt.Tx) error {
+	_, err := app.GetConnect(name)
+	if err != nil {
+		app.logger.Error("get exist connect failed", "name", name, "err", err)
+		return err
+	}
+	err = app.db.Update(func(tx *bolt.Tx) error {
 		bucket := tx.Bucket([]byte(BucketConnections))
 		existConnect := bucket.Get([]byte(name))
 		if existConnect == nil {
@@ -239,7 +257,7 @@ func (app *App) DialConnect(name string) ([]string, error) {
 	if app.debug {
 		cc.debug = true
 	}
-	httpClient, err := NewHttpClient(cc)
+	httpClient, err := NewHttpClient(cc, app.logger)
 	if err != nil {
 		app.logger.Error("dial connect failed: create http client failed", "reason", err)
 		return nil, err

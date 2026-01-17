@@ -300,7 +300,7 @@
         <div class="modal-body">
           <div class="form-group">
             <label>{{ $t('connection.connectionName') }}</label>
-            <input v-model="editingConnection.name" type="text" placeholder="My Database" />
+            <input v-model="editingConnection.name" type="text" placeholder="My Database" disabled />
           </div>
           <div class="form-group">
             <label>
@@ -1390,6 +1390,13 @@ const startResize = (e: MouseEvent) => {
 .form-group input:focus {
   outline: none;
   border-color: var(--accent-color);
+}
+
+.form-group input:disabled {
+  background: var(--bg-hover);
+  color: var(--text-secondary);
+  cursor: not-allowed;
+  opacity: 0.6;
 }
 
 .file-input-group {

@@ -182,7 +182,7 @@ func (h *HttpClientCreator) SetDebug(debug bool) {
 	h.debug = debug
 }
 
-func NewHttpClient(cfg *ConnectConfig) (HttpClient, error) {
+func NewHttpClient(cfg *ConnectConfig, logger *Logger) (HttpClient, error) {
 	var client = &HttpClientCreator{client: &http.Client{
 		Timeout: 600 * time.Second,
 	}}
@@ -196,7 +196,7 @@ func NewHttpClient(cfg *ConnectConfig) (HttpClient, error) {
 
 	// Setup SSH tunnel if enabled
 	if cfg.EnableSSH {
-		tunnel, err := NewSSHTunnel(cfg)
+		tunnel, err := NewSSHTunnel(cfg, logger)
 		if err != nil {
 			return nil, fmt.Errorf("failed to create SSH tunnel: %w", err)
 		}
